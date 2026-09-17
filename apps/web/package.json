@@ -1,0 +1,17 @@
+{
+  "name": "beetrust-trade-war-room",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Seven-skill collaborative orchestration hub for New Zealand Manuka honey export cases.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node dist/index.js --test",
+    "demo": "npm run build && node dist/index.js",
+    "demo:live": "npm run build && node dist/index.js --live"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

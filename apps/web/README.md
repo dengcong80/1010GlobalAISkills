@@ -1,0 +1,58 @@
+# BeeTrust Trade War Room
+
+BeeTrust is a deterministic TypeScript MVP for the SP-A Collaborative Orchestration Hub scenario. It models one New Zealand Mānuka honey export case from intent to a broker-ready release recommendation.
+
+The package contains seven connected skills:
+
+1. `orchestration-hub` parses intent, builds a dependency DAG, dispatches roles and retries failed tasks.
+2. `fingerprint-evidence` compares a laboratory CSV/report extract with a reference batch.
+3. `custody-ledger` creates and verifies a SHA-256 chain of custody.
+4. `mpi-market-access` evaluates versioned MPI evidence snapshots.
+5. `customs-clearance` proposes HS codes, estimates costs and generates invoice, packing list and TSW draft objects.
+6. `trade-risk-adversary` injects six controlled faults and observes the gates.
+7. `evidence-monitor` distils all outputs into `RELEASE`, `REVIEW` or `BLOCKED`.
+
+## Run
+
+```powershell
+cd apps/web
+npm install
+npm test
+npm run demo
+npm run demo:live
+```
+
+`npm run demo:live` performs an HTTP availability check against the public NZ Customs tariff page. The normal demo uses deterministic snapshots so judging is repeatable. No request is submitted to TSW, no certificate is issued, and no real laboratory or MPI assurance is fabricated.
+
+The demo also writes `dist/beetrust-dashboard.html`, a self-contained runtime view of the DAG, evidence gates, red-team outcomes and `SkillMessage/v1` timeline.
+
+## Shared protocol
+
+Every dispatch event uses `SkillMessage/v1`:
+
+```text
+{ id, caseId, correlationId, skill, type, timestamp, attempt, status, payload, evidenceRefs }
+```
+
+All seven roles register their trigger words in `src/trigger-registry.ts`, so an incoming command can be routed to one or more skills without introducing a second protocol.
+
+`src/framework-bridge.ts` emits GraphFlow-style AutoGen and planner/worker AgentVerse team descriptors from the same DAG. The local runner stays dependency-free and deterministic for judging; a production deployment can replace the handler transport with a real AutoGen or AgentVerse runtime while keeping `SkillMessage/v1` unchanged.
+
+The workflow is `Intent Input -> Task Decomposition / Planning -> Multi-Agent Division of Labor & Collaboration -> Result Completion & Monitoring`. Fingerprint, custody and MPI roots can run independently; customs waits for MPI; adversary waits for operational outputs; monitoring is the final release gate. `observeSwarm()` reports root-agent parallelism, dependency edges, critical path and per-agent message counts for runtime visualization.
+
+## Demo case and business value
+
+The demonstrator uses Comvita Limited as the named New Zealand case owner because its public investor centre is verifiable. It does not claim that Comvita supplied this synthetic shipment or that the demo buyer is a real customer. The case models a 1,000-jar UMF Mānuka honey shipment from New Zealand to Australia and produces an explainable evidence matrix, a landed-value estimate, document drafts and six negative-path decisions. Replace the fixtures with accredited lab records, current MPI destination rules and broker-confirmed tariff data before any real shipment.
+
+## Evidence sources
+
+- MPI honey export steps: https://www.mpi.govt.nz/export/food/honey-and-bee-products/steps-to-exporting
+- MPI honey requirements: https://www.mpi.govt.nz/export/food/honey-and-bee-products/requirements
+- MPI animal-product export certificates: https://www.mpi.govt.nz/export/export-requirements/export-certification/animal-product-export-certificates
+- NZ Customs tariff classifications and rates: https://www.customs.govt.nz/business/tariffs/tariff-classifications-and-rates
+- NZ Customs clear exports: https://www.customs.govt.nz/business/export/clear-your-exports
+- NZ Customs Trade Single Window getting started: https://www.customs.govt.nz/business/trade-single-window-tsw/getting-started
+- MFAT guide to using free trade agreements: https://www.mfat.govt.nz/en/trade/how-we-help-exporters/guide-to-using-free-trade-agreements-for-goods-exporters
+- Comvita public investor centre: https://comvita.co.nz/pages/investor-centre
+
+Each skill has a local `skills/<name>/SKILL.md` contract and supporting TypeScript scripts in `src/skills/<name>/index.ts` and `tests.ts`. The seven suites contain at least 20 cases each (the package currently runs 192 cases).
