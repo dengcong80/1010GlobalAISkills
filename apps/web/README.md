@@ -2,6 +2,8 @@
 
 BeeTrust is a deterministic TypeScript MVP for the SP-A Collaborative Orchestration Hub scenario. It models one New Zealand Mānuka honey export case from intent to a broker-ready release recommendation.
 
+This repository supports collaborative development and review.
+
 The package contains seven connected skills:
 
 1. `orchestration-hub` parses intent, builds a dependency DAG, dispatches roles and retries failed tasks.
