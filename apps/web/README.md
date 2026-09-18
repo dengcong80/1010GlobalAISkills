@@ -14,6 +14,30 @@ The package contains seven connected skills:
 6. `trade-risk-adversary` injects six controlled faults and observes the gates.
 7. `evidence-monitor` distils all outputs into `RELEASE`, `REVIEW` or `BLOCKED`.
 
+## Track B / SP-A package readiness
+
+`track-b-package.json` is the explicit local package manifest. It records the seven
+Skills, their contracts, implementations, tests, resources, shared `SkillMessage/v1`
+schema and the SP-A main pipeline.
+
+Run the local acceptance report with:
+
+```powershell
+npm run acceptance
+```
+
+The report checks package structure, at least six registered Skills, at least 20
+passing self-tests per Skill, both registered and user-like trigger fixtures,
+framework-compatible team descriptors, fail-closed invalid-input branches, and
+the red-team end-to-end pipeline. Each Skill also contains a runnable example
+under `skills/<name>/scripts/`; `evidence-source-register.json` records the public
+source URLs used by the domain rules. `npm run pack:trackb` additionally creates
+a source package at `dist/beetrust-trackb-spa.zip`.
+
+These commands prove a local, installable source package only. They do not claim
+WorkHub publication, a Wesome workspace link, live marketplace status, or a live
+AutoGen/AgentVerse runtime.
+
 ## Run
 
 ```powershell

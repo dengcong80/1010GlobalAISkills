@@ -1,0 +1,55 @@
+{
+  "purpose": "Public source register for the BeeTrust synthetic commerce demonstrator.",
+  "boundary": "URLs support source traceability only; current rules, broker advice and enterprise records must be revalidated before production use.",
+  "sources": [
+    {
+      "id": "mpi-export-steps",
+      "publisher": "New Zealand Ministry for Primary Industries",
+      "url": "https://www.mpi.govt.nz/export/food/honey-and-bee-products/steps-to-exporting",
+      "usedBy": ["mpi-market-access"]
+    },
+    {
+      "id": "mpi-honey-requirements",
+      "publisher": "New Zealand Ministry for Primary Industries",
+      "url": "https://www.mpi.govt.nz/export/food/honey-and-bee-products/requirements",
+      "usedBy": ["mpi-market-access"]
+    },
+    {
+      "id": "mpi-animal-export-certificates",
+      "publisher": "New Zealand Ministry for Primary Industries",
+      "url": "https://www.mpi.govt.nz/export/export-requirements/export-certification/animal-product-export-certificates",
+      "usedBy": ["mpi-market-access"]
+    },
+    {
+      "id": "nz-customs-tariff",
+      "publisher": "New Zealand Customs Service",
+      "url": "https://www.customs.govt.nz/business/tariffs/tariff-classifications-and-rates",
+      "usedBy": ["customs-clearance"]
+    },
+    {
+      "id": "nz-customs-export",
+      "publisher": "New Zealand Customs Service",
+      "url": "https://www.customs.govt.nz/business/export/clear-your-exports",
+      "usedBy": ["customs-clearance"]
+    },
+    {
+      "id": "nz-customs-tsw",
+      "publisher": "New Zealand Customs Service",
+      "url": "https://www.customs.govt.nz/business/trade-single-window-tsw/getting-started",
+      "usedBy": ["customs-clearance"]
+    },
+    {
+      "id": "nz-mfat-fta-guide",
+      "publisher": "New Zealand Ministry of Foreign Affairs and Trade",
+      "url": "https://www.mfat.govt.nz/en/trade/how-we-help-exporters/guide-to-using-free-trade-agreements-for-goods-exporters",
+      "usedBy": ["customs-clearance"]
+    },
+    {
+      "id": "comvita-investor-centre",
+      "publisher": "Comvita Limited",
+      "url": "https://comvita.co.nz/pages/investor-centre",
+      "usedBy": ["customs-clearance"],
+      "note": "Public representative enterprise context only; the shipment and buyer in the demo are synthetic."
+    }
+  ]
+}

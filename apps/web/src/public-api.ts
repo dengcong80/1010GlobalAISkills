@@ -8,6 +8,7 @@ export { injectFault, evaluateFault, runAdversarySkill, ALL_FAULTS } from "./ski
 export { auditTradeCase, renderAuditSummary } from "./skills/evidence-monitor/index.js";
 export { TRIGGER_REGISTRY, routeTriggers } from "./trigger-registry.js";
 export { runAllSelfTests } from "./self-test.js";
+export { runAcceptance } from "./acceptance.js";
 export { renderDashboardHtml } from "./dashboard.js";
 export { toAutoGenTeamConfig, toAgentVerseTeamConfig, validateFrameworkMessages } from "./framework-bridge.js";
 export type * from "./types.js";

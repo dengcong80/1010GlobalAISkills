@@ -10,4 +10,6 @@ The Trade Incident Commander turns one trade sentence into a dependency-aware DA
 
 **Coordination behavior:** fingerprint, custody and MPI checks can start independently; customs waits for MPI; adversary waits for all operational outputs; the evidence monitor is the final gate. Each node has two attempts and emits a retry message after a transient failure.
 
+**Runnable example:** after `npm run build`, run `node skills/orchestration-hub/scripts/run-example.mjs`.
+
 **Self-test:** `src/skills/orchestration-hub/tests.ts` contains 26 cases.

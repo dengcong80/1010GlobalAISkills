@@ -6,4 +6,6 @@ The Release Auditor Agent applies a single evidence matrix over all six operatio
 
 Any missing evidence reference or blocked upstream gate blocks release. Review states remain visible rather than being silently promoted. The output is a release recommendation for human/broker review.
 
+**Runnable example:** after `npm run build`, run `node skills/evidence-monitor/scripts/run-example.mjs`.
+
 **Self-test:** `src/skills/evidence-monitor/tests.ts` contains 25 cases covering gate precedence, evidence completeness, score changes, matrix output and action generation.

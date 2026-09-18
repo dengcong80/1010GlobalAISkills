@@ -65,25 +65,34 @@ export async function executeTaskPlan(plan: TaskPlan, tradeCase: TradeCase, hand
   while (pending.size > 0) {
     const runnable = plan.nodes.filter((node) => pending.has(node.id) && node.dependsOn.every((dependency) => completed.has(dependency)));
     if (runnable.length === 0) throw new Error("Task plan has an unresolved dependency cycle.");
-    for (const node of runnable) {
+    // Nodes at the same DAG level are independent agents. Run that level
+    // concurrently, then commit outputs in plan order so the demo timeline
+    // remains deterministic and downstream nodes see a complete level.
+    const results = await Promise.all(runnable.map(async (node) => {
       const handler = handlers[node.skill];
       if (!handler) throw new Error(`No handler registered for ${node.skill}`);
+      const taskMessages: SkillMessage[] = [];
+      let output: unknown;
       let completedTask = false;
       for (let attempt = 1; attempt <= node.maxAttempts && !completedTask; attempt += 1) {
-        messages.push(createMessage(plan.caseId, node.id, node.skill, "TASK_STARTED", "RUNNING", { nodeId: node.id }, attempt));
+        taskMessages.push(createMessage(plan.caseId, node.id, node.skill, "TASK_STARTED", "RUNNING", { nodeId: node.id }, attempt));
         try {
-          const output = await handler({ tradeCase, plan, outputs, attempt });
-          outputs[node.skill] = output;
-          messages.push(createMessage(plan.caseId, node.id, node.skill, "TASK_COMPLETED", "PASS", output, attempt, extractEvidenceRefs(output)));
+          output = await handler({ tradeCase, plan, outputs, attempt });
+          taskMessages.push(createMessage(plan.caseId, node.id, node.skill, "TASK_COMPLETED", "PASS", output, attempt, extractEvidenceRefs(output)));
           completedTask = true;
         } catch (error) {
           const status = attempt < node.maxAttempts ? "TASK_RETRY" : "TASK_FAILED";
-          messages.push(createMessage(plan.caseId, node.id, node.skill, status, "ERROR", { error: error instanceof Error ? error.message : String(error) }, attempt));
+          taskMessages.push(createMessage(plan.caseId, node.id, node.skill, status, "ERROR", { error: error instanceof Error ? error.message : String(error) }, attempt));
           if (attempt === node.maxAttempts) throw error;
         }
       }
-      pending.delete(node.id);
-      completed.add(node.id);
+      return { node, output, taskMessages };
+    }));
+    for (const result of results) {
+      outputs[result.node.skill] = result.output;
+      messages.push(...result.taskMessages);
+      pending.delete(result.node.id);
+      completed.add(result.node.id);
     }
   }
   return { outputs, messages };

@@ -1,0 +1,5 @@
+{
+  "schema": "SkillMessage/v1",
+  "required": ["id", "caseId", "correlationId", "skill", "type", "timestamp", "attempt", "status", "payload", "evidenceRefs"],
+  "coordination": "dependency-aware task lifecycle messages"
+}

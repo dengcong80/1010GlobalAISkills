@@ -4,6 +4,7 @@ import { observeSwarm, renderPlanLevels, renderRuntimeTimeline } from "./skills/
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderDashboardHtml } from "./dashboard.js";
+import { runAcceptance } from "./acceptance.js";
 
 async function main(): Promise<void> {
   const args = new Set(process.argv.slice(2));
@@ -11,6 +12,12 @@ async function main(): Promise<void> {
     const summaries = await runAllSelfTests();
     const total = summaries.reduce((sum, item) => sum + item.passed, 0);
     console.log(JSON.stringify({ skills: summaries, totalCases: total, allPassed: true }, null, 2));
+    return;
+  }
+  if (args.has("--acceptance")) {
+    const report = await runAcceptance();
+    console.log(JSON.stringify(report, null, 2));
+    if (!report.allPassed) process.exitCode = 1;
     return;
   }
   const workflow = await runTradeCase(undefined, { liveSources: args.has("--live"), includeRedTeam: true });
@@ -36,4 +43,5 @@ main().catch((error) => {
 });
 
 export { runAllSelfTests } from "./self-test.js";
+export { runAcceptance } from "./acceptance.js";
 export { runTradeCase } from "./workflow.js";
