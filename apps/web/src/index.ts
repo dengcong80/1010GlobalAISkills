@@ -29,12 +29,15 @@ async function main(): Promise<void> {
   console.log("DAG levels: " + renderPlanLevels(workflow.plan));
   const swarm = observeSwarm(workflow.plan, workflow.tradeCase.messages);
   console.log(`Swarm observation: ${swarm.parallelRootCount} root agents, ${swarm.collaborationEdges} dependency edges, critical path ${swarm.criticalPathLength} stages`);
+  console.log(`Framework runtime: ${workflow.frameworkRuntime.provider} ${workflow.frameworkRuntime.runtimeVersion} | executed=${workflow.frameworkRuntime.executed}`);
+  console.log(`Business KPIs: evidence ${workflow.kpis.evidenceCoveragePct}%, fault detection ${workflow.kpis.faultDetectionPct}%, pilot time proxy ${workflow.kpis.estimatedTimeReductionPct}%`);
   console.log(`Runtime events: ${workflow.tradeCase.messages.length} (see JSON/API for full SkillMessage/v1 payloads)`);
   console.log(`Dashboard: ${dashboardPath}`);
+  if (args.has("--incident")) console.log("Incident Room: use the Inject buttons in the dashboard to replay faults and restore the baseline.");
   console.log(renderRuntimeTimeline(workflow.tradeCase.messages.slice(0, 12)));
   console.log("Red-team decisions:");
   for (const scenario of workflow.redTeam) console.log(`  ${scenario.fault.padEnd(24)} ${scenario.decision} | ${scenario.findings[0]?.observed ?? "no active finding"}`);
-  console.log(JSON.stringify({ baseline: workflow.baseline, generatedDocuments: workflow.tradeCase.customs?.documents.map((document) => document.documentType), liveSourceLookup: args.has("--live") }, null, 2));
+  console.log(JSON.stringify({ baseline: workflow.baseline, frameworkRuntime: workflow.frameworkRuntime, kpis: workflow.kpis, generatedDocuments: workflow.tradeCase.customs?.documents.map((document) => document.documentType), liveSourceLookup: args.has("--live") }, null, 2));
 }
 
 main().catch((error) => {

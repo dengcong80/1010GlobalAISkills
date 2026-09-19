@@ -1,4 +1,4 @@
-import { deterministicId } from "../../crypto.js";
+import { deterministicId, sha256 } from "../../crypto.js";
 import { HONEY_HS_CANDIDATES, SOURCE_REGISTRY } from "../../rules.js";
 import type { CustomsDocument, CustomsInput, CustomsResult } from "../../types.js";
 
@@ -9,15 +9,35 @@ export interface TariffSnapshot {
   retrievedAt: string;
   live: boolean;
   note: string;
+  httpStatus?: number;
+  contentHash: string;
+  contentLength: number;
+  markerFound: boolean;
 }
 
 export async function fetchOfficialTariffSource(live = false): Promise<TariffSnapshot> {
-  if (!live) return { sourceUrl: SOURCE_REGISTRY.customsTariff, retrievedAt: new Date().toISOString(), live: false, note: "Deterministic source snapshot; pass --live to verify page availability." };
+  if (!live) {
+    const note = "Deterministic source snapshot; pass --live to retrieve and hash the current page.";
+    return { sourceUrl: SOURCE_REGISTRY.customsTariff, retrievedAt: new Date().toISOString(), live: false, note, contentHash: sha256(`${SOURCE_REGISTRY.customsTariff}|snapshot`), contentLength: 0, markerFound: false };
+  }
   try {
     const response = await fetch(SOURCE_REGISTRY.customsTariff, { signal: AbortSignal.timeout(5000) });
-    return { sourceUrl: SOURCE_REGISTRY.customsTariff, retrievedAt: new Date().toISOString(), live: response.ok, note: response.ok ? `Official Customs page responded ${response.status}.` : `Official Customs page responded ${response.status}; manual verification required.` };
+    const body = await response.text();
+    const markerFound = /tariff|classification|customs/i.test(body);
+    const live = response.ok && markerFound;
+    return {
+      sourceUrl: SOURCE_REGISTRY.customsTariff,
+      retrievedAt: new Date().toISOString(),
+      live,
+      httpStatus: response.status,
+      note: live ? `Official Customs page responded ${response.status}; content marker verified.` : `Official Customs page responded ${response.status}, but tariff content could not be verified.`,
+      contentHash: sha256(body),
+      contentLength: body.length,
+      markerFound
+    };
   } catch (error) {
-    return { sourceUrl: SOURCE_REGISTRY.customsTariff, retrievedAt: new Date().toISOString(), live: false, note: `Live lookup unavailable: ${error instanceof Error ? error.message : String(error)}.` };
+    const note = `Live lookup unavailable: ${error instanceof Error ? error.message : String(error)}.`;
+    return { sourceUrl: SOURCE_REGISTRY.customsTariff, retrievedAt: new Date().toISOString(), live: false, note, contentHash: sha256(note), contentLength: 0, markerFound: false };
   }
 }
 
@@ -37,24 +57,28 @@ export async function runCustomsSkill(input: CustomsInput): Promise<CustomsResul
   if (!input.seller || !input.buyer) validationIssues.push("Seller and buyer are required on the commercial invoice.");
   if (!input.destination) validationIssues.push("Destination is required.");
   if (!input.classificationEvidence) validationIssues.push("HS candidate is not supported by broker or tariff evidence.");
-  if (input.lines.some((line) => line.quantity <= 0 || line.unitValueNzd < 0 || line.netWeightKg <= 0)) validationIssues.push("Every line needs positive quantity and net weight and non-negative value.");
+  if (input.lines.length === 0) validationIssues.push("At least one commercial invoice line is required.");
+  if (input.lines.some((line) => line.quantity <= 0 || line.unitValueNzd < 0 || line.netWeightKg <= 0 || !Number.isFinite(line.quantity) || !Number.isFinite(line.unitValueNzd) || !Number.isFinite(line.netWeightKg))) validationIssues.push("Every line needs positive quantity and net weight and non-negative value.");
+  if (![input.freightNzd, input.insuranceNzd, input.dutyRate, input.levyRate, input.exportGstRate].every((value) => Number.isFinite(value) && value >= 0)) validationIssues.push("Freight, insurance and rates must be finite non-negative numbers.");
+  if (input.liveSourceLookup && !snapshot.live) validationIssues.push("Official Customs source could not be verified live; manual tariff verification is required.");
   const documents = createDocuments(input, goodsValueNzd, estimatedLandedValueNzd, hsCandidates[0].code, snapshot);
+  const blockedIssue = validationIssues.some((issue) => issue.includes("required") || issue.includes("positive") || issue.includes("finite"));
   return {
-    status: validationIssues.length === 0 && input.classificationEvidence ? "PASS" : validationIssues.some((issue) => issue.includes("required") || issue.includes("positive")) ? "BLOCKED" : "REVIEW",
+    status: validationIssues.length === 0 && input.classificationEvidence ? "PASS" : blockedIssue ? "BLOCKED" : "REVIEW",
     hsCandidates,
     totals: { goodsValueNzd, freightNzd: input.freightNzd, insuranceNzd: input.insuranceNzd, dutyNzd, levyNzd, exportGstNzd, estimatedLandedValueNzd },
     documents,
     validationIssues,
-    evidenceRefs: [deterministicId("customs-evidence", { input, snapshot })],
+    evidenceRefs: [deterministicId("customs-evidence", { input, snapshot }), deterministicId("customs-source-snapshot", { sourceUrl: snapshot.sourceUrl, contentHash: snapshot.contentHash, live: snapshot.live })],
     sourceUrls: [SOURCE_REGISTRY.customsTariff, SOURCE_REGISTRY.customsExports, SOURCE_REGISTRY.customsTsw, SOURCE_REGISTRY.ftaGuide, ...(input.sellerSourceUrl ? [input.sellerSourceUrl] : [])],
-    assumptions: ["HS code is a candidate and must be confirmed against the current tariff and broker advice.", "Rates are supplied by the case; destination taxes and preferential treatment require importer confirmation.", snapshot.note]
+    assumptions: ["HS code is a candidate and must be confirmed against the current tariff and broker advice.", "Rates are supplied by the case; destination taxes and preferential treatment require importer confirmation.", snapshot.note, `Tariff snapshot hash ${snapshot.contentHash} (${snapshot.contentLength} bytes; marker=${snapshot.markerFound}).`]
   };
 }
 
 function createDocuments(input: CustomsInput, goodsValueNzd: number, landedValueNzd: number, hsCode: string, snapshot: TariffSnapshot): CustomsDocument[] {
   const invoiceNumber = deterministicId("invoice", input.caseId).toUpperCase();
   const packingNumber = deterministicId("packing", input.caseId).toUpperCase();
-  const invoice = { invoiceNumber, seller: input.seller, sellerSourceUrl: input.sellerSourceUrl, buyer: input.buyer, origin: input.origin, destination: input.destination, currency: input.currency, hsCodeCandidate: hsCode, lines: input.lines, goodsValueNzd, freightNzd: input.freightNzd, insuranceNzd: input.insuranceNzd, totalDeclaredValueNzd: round(goodsValueNzd + input.freightNzd + input.insuranceNzd), tariffSource: snapshot.sourceUrl };
+  const invoice = { invoiceNumber, seller: input.seller, sellerSourceUrl: input.sellerSourceUrl, buyer: input.buyer, origin: input.origin, destination: input.destination, currency: input.currency, hsCodeCandidate: hsCode, lines: input.lines, goodsValueNzd, freightNzd: input.freightNzd, insuranceNzd: input.insuranceNzd, totalDeclaredValueNzd: round(goodsValueNzd + input.freightNzd + input.insuranceNzd), tariffSource: snapshot.sourceUrl, tariffSnapshotHash: snapshot.contentHash, tariffSnapshotRetrievedAt: snapshot.retrievedAt };
   const packing = { packingListNumber: packingNumber, caseId: input.caseId, packages: input.lines.map((line) => ({ sku: line.sku, quantity: line.quantity, unit: line.unit, netWeightKg: line.netWeightKg })), totalPackages: input.lines.reduce((sum, line) => sum + line.quantity, 0), totalNetWeightKg: round(input.lines.reduce((sum, line) => sum + line.netWeightKg, 0)) };
   const tsw = { messageType: "export-declaration-draft", caseId: input.caseId, seller: input.seller, destination: input.destination, hsCodeCandidate: hsCode, declaredValueNzd: invoice.totalDeclaredValueNzd, estimatedLandedValueNzd: landedValueNzd, readyForBrokerReview: true, submission: "DRAFT_ONLY" };
   return [

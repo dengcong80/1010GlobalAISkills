@@ -254,6 +254,27 @@ export interface TradeCase {
 export interface WorkflowOptions {
   liveSources?: boolean;
   includeRedTeam?: boolean;
+  runtimeProvider?: "langgraph-stategraph" | "local-agentverse-swarm";
+}
+
+export interface FrameworkRuntimeSummary {
+  provider: "langgraph-stategraph" | "local-agentverse-swarm";
+  runtimeVersion: string;
+  executed: boolean;
+  agentRuns: Array<{ skill: SkillName; attempts: number; status: StageStatus }>;
+  monitoring: { messagesObserved: number; dependencyEdges: number; retries: number };
+}
+
+export interface BusinessKpis {
+  evidenceCoveragePct: number;
+  faultDetectionPct: number;
+  parallelRootAgents: number;
+  criticalPathStages: number;
+  totalMessages: number;
+  estimatedManualMinutes: number;
+  estimatedOrchestratedMinutes: number;
+  estimatedTimeReductionPct: number;
+  status: "MEASURED_PROTOTYPE" | "TARGET_FOR_PILOT";
 }
 
 export interface WorkflowRun {
@@ -261,6 +282,8 @@ export interface WorkflowRun {
   plan: TaskPlan;
   baseline: MonitorResult;
   redTeam: Array<{ fault: FaultType; decision: ReleaseDecision; findings: AdversaryFinding[] }>;
+  frameworkRuntime: FrameworkRuntimeSummary;
+  kpis: BusinessKpis;
 }
 
 export interface SwarmObservation {

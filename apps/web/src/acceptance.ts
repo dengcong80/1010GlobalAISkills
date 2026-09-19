@@ -1,10 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { execFile } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { toAgentVerseTeamConfig, toAutoGenTeamConfig, validateFrameworkMessages } from "./framework-bridge.js";
 import { compareFingerprint } from "./skills/fingerprint-evidence/index.js";
 import { checkMpiMarketAccess } from "./skills/mpi-market-access/index.js";
-import { runCustomsSkill } from "./skills/customs-clearance/index.js";
+import { fetchOfficialTariffSource, hsCandidatesFor, runCustomsSkill } from "./skills/customs-clearance/index.js";
 import { runAllSelfTests } from "./self-test.js";
 import { routeTriggers, TRIGGER_REGISTRY } from "./trigger-registry.js";
 import { runTradeCase } from "./workflow.js";
@@ -26,6 +28,7 @@ interface PackageManifest {
   communicationSchema: string;
   mainPipeline: string[];
   evidenceSources?: string;
+  knowledge?: string;
   validation: {
     minimumEffectiveSkills: number;
     minimumSelfTestsPerSkill: number;
@@ -33,6 +36,7 @@ interface PackageManifest {
     minimumMainPipelines: number;
   };
   skills: PackageSkill[];
+  publicMaterials?: string[];
 }
 
 export interface AcceptanceCheck {
@@ -64,6 +68,7 @@ export interface AcceptanceReport {
 
 const appRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const manifestPath = join(appRoot, "track-b-package.json");
+const execFileAsync = promisify(execFile);
 
 function addCheck(checks: AcceptanceCheck[], name: string, passed: boolean, details: string,
                  value?: number | string | boolean): void {
@@ -160,12 +165,32 @@ function packageStructureChecks(manifest: PackageManifest, checks: AcceptanceChe
       existsSync(implementation) && existsSync(tests) && existsSync(contract) &&
       existsSync(resources) && resourceFiles.length > 0 && existsSync(scripts) && scriptFiles.length > 0,
       `implementation=${existsSync(implementation)}, tests=${existsSync(tests)}, SKILL.md=${existsSync(contract)}, resources=${resourceFiles.length}, scripts=${scriptFiles.length}`);
+    const contractText = existsSync(contract) ? readFileSync(contract, "utf8") : "";
+    const contractSections = ["**Triggers:**", "**Input:**", "**Prechecks:**", "**Business rules:**", "**Output:**", "**Exceptions:**", "**Runnable example:**", "**Self-test:"];
+    addCheck(checks, `${skill.name}-contract-completeness`, contractSections.every((section) => contractText.includes(section)),
+      `SKILL.md has ${contractSections.filter((section) => contractText.includes(section)).length}/${contractSections.length} required executable sections`);
   }
   if (manifest.evidenceSources) {
     const evidenceSourcesPath = join(appRoot, manifest.evidenceSources);
     addCheck(checks, "public-evidence-source-register", existsSync(evidenceSourcesPath),
       `evidence source register exists at ${manifest.evidenceSources}`);
+    if (existsSync(evidenceSourcesPath)) {
+      const register = JSON.parse(readFileSync(evidenceSourcesPath, "utf8")) as { sources?: Array<{ ruleIds?: string[]; codePaths?: string[]; testRefs?: string[] }> };
+      const sources = register.sources ?? [];
+      const mapped = sources.filter((source) => (source.ruleIds?.length ?? 0) > 0 && (source.codePaths?.length ?? 0) > 0 && (source.testRefs?.length ?? 0) > 0).length;
+      addCheck(checks, "evidence-distillation-correspondence", sources.length > 0 && mapped === sources.length,
+        `${mapped}/${sources.length} public sources map to rule IDs, code paths and test references`);
+    }
   }
+  if (manifest.knowledge) {
+    const knowledgePath = join(appRoot, manifest.knowledge);
+    const knowledgeFiles = existsSync(knowledgePath) ? readdirSync(knowledgePath) : [];
+    addCheck(checks, "knowledge-distillation-package", existsSync(knowledgePath) && knowledgeFiles.length >= 4,
+      `${knowledgeFiles.length} versioned knowledge files are available at ${manifest.knowledge}`);
+  }
+  const publicMaterials = manifest.publicMaterials ?? [];
+  addCheck(checks, "public-demo-materials", publicMaterials.length >= 2 && publicMaterials.every((item) => existsSync(join(appRoot, "..", "..", item))),
+    `${publicMaterials.length} public demo materials are traceable from the repository`);
 }
 
 function frameworkBridgeCheck(workflow: Awaited<ReturnType<typeof runTradeCase>>, checks: AcceptanceCheck[]): void {
@@ -178,9 +203,42 @@ function frameworkBridgeCheck(workflow: Awaited<ReturnType<typeof runTradeCase>>
     agentVerse.planner === "orchestration-hub" &&
     agentVerse.observer === "evidence-monitor" &&
     agentVerse.workers.length === workflow.plan.nodes.length &&
-    messageErrors.length === 0;
+    messageErrors.length === 0 &&
+    workflow.frameworkRuntime.executed &&
+    workflow.frameworkRuntime.agentRuns.length === workflow.plan.nodes.length;
   addCheck(checks, "framework-bridge-contract", passed,
-    `GraphFlow agents=${autoGen.agents.length}, AgentVerse workers=${agentVerse.workers.length}, message errors=${messageErrors.length}. Descriptors are generated locally; live framework runtime remains NOT VERIFIED.`);
+    `GraphFlow agents=${autoGen.agents.length}, AgentVerse workers=${agentVerse.workers.length}, runtime=${workflow.frameworkRuntime.provider}/${workflow.frameworkRuntime.runtimeVersion}, executed=${workflow.frameworkRuntime.executed}, message errors=${messageErrors.length}.`);
+}
+
+function domainRuleEffectivenessCheck(workflow: Awaited<ReturnType<typeof runTradeCase>>, checks: AcceptanceCheck[]): void {
+  const validMpi = checkMpiMarketAccess("Australia", workflow.tradeCase.mpiEvidence).status === "PASS";
+  const missingHarvest = checkMpiMarketAccess("Australia", { ...workflow.tradeCase.mpiEvidence, harvestDeclaration: false }).status === "BLOCKED";
+  const honeyClassification = hsCandidatesFor("UMF Mānuka honey")[0]?.code === "0409.00";
+  addCheck(checks, "domain-rule-effectiveness", validMpi && missingHarvest && honeyClassification,
+    `MPI valid=${validMpi}, missing harvest blocks=${missingHarvest}, honey HS candidate=${honeyClassification}`);
+}
+
+async function runnableExamplesCheck(manifest: PackageManifest, checks: AcceptanceCheck[]): Promise<void> {
+  const results: string[] = [];
+  for (const skill of manifest.skills) {
+    const scriptsDir = join(appRoot, skill.scripts);
+    const script = join(scriptsDir, "run-example.mjs");
+    try {
+      await execFileAsync(process.execPath, [script], { cwd: appRoot, timeout: 20_000, maxBuffer: 2_000_000 });
+      results.push(`${skill.name}=PASS`);
+    } catch (error) {
+      results.push(`${skill.name}=FAIL:${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  const passed = results.every((result) => result.endsWith("=PASS"));
+  addCheck(checks, "runnable-skill-examples", passed, results.join(", "));
+}
+
+async function realHttpToolCheck(checks: AcceptanceCheck[]): Promise<void> {
+  const snapshot = await fetchOfficialTariffSource(true);
+  const passed = snapshot.sourceUrl.startsWith("https://") && snapshot.contentHash.length === 64 && snapshot.retrievedAt.length > 0;
+  addCheck(checks, "real-http-tool-integration", passed,
+    `NZ Customs fetch returned status=${snapshot.httpStatus ?? "unavailable"}, marker=${snapshot.markerFound}, hash=${snapshot.contentHash.slice(0, 12)}…, live=${snapshot.live}`);
 }
 
 async function invalidInputFallbackCheck(workflow: Awaited<ReturnType<typeof runTradeCase>>, checks: AcceptanceCheck[]): Promise<void> {
@@ -217,6 +275,8 @@ export async function runAcceptance(): Promise<AcceptanceReport> {
   const checks: AcceptanceCheck[] = [];
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as PackageManifest;
   packageStructureChecks(manifest, checks);
+  await runnableExamplesCheck(manifest, checks);
+  await realHttpToolCheck(checks);
 
   const summaries = await runAllSelfTests();
   const totalCases = summaries.reduce((sum, summary) => sum + summary.passed, 0);
@@ -251,6 +311,7 @@ export async function runAcceptance(): Promise<AcceptanceReport> {
     mainPipelinePassed,
     `plan nodes=${workflow.plan.nodes.length}, observed Skills=${observedSkills.length}, baseline=${workflow.baseline.decision}, red-team=${workflow.redTeam.length}`,
     workflow.redTeam.length);
+  domainRuleEffectivenessCheck(workflow, checks);
   frameworkBridgeCheck(workflow, checks);
   await invalidInputFallbackCheck(workflow, checks);
 

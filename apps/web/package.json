@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node dist/index.js --test",
     "demo": "npm run build && node dist/index.js",
+    "demo:incident": "npm run build && node dist/index.js --incident",
     "demo:live": "npm run build && node dist/index.js --live",
     "acceptance": "npm run build && node dist/index.js --acceptance",
     "pack:trackb": "npm run acceptance && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pack-trackb.ps1"
@@ -15,5 +16,8 @@
   "devDependencies": {
     "@types/node": "^22.10.0",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@langchain/langgraph": "^1.4.16"
   }
 }

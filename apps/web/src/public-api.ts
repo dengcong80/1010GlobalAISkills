@@ -11,4 +11,6 @@ export { runAllSelfTests } from "./self-test.js";
 export { runAcceptance } from "./acceptance.js";
 export { renderDashboardHtml } from "./dashboard.js";
 export { toAutoGenTeamConfig, toAgentVerseTeamConfig, validateFrameworkMessages } from "./framework-bridge.js";
+export { runFrameworkRuntime } from "./framework-runtime.js";
+export { calculateBusinessKpis } from "./kpis.js";
 export type * from "./types.js";

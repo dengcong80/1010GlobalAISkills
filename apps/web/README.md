@@ -20,6 +20,11 @@ The package contains seven connected skills:
 Skills, their contracts, implementations, tests, resources, shared `SkillMessage/v1`
 schema and the SP-A main pipeline.
 
+The `knowledge/` directory makes the distillation auditable: each MPI or Customs rule
+maps from a public source ID to a TypeScript branch and a self-test. The representative
+enterprise context uses Comvita's public investor page only; it does not claim access to
+Comvita's private SOPs or shipment records.
+
 Run the local acceptance report with:
 
 ```powershell
@@ -46,9 +51,16 @@ npm install
 npm test
 npm run demo
 npm run demo:live
+npm run demo:incident
 ```
 
-`npm run demo:live` performs an HTTP availability check against the public NZ Customs tariff page. The normal demo uses deterministic snapshots so judging is repeatable. No request is submitted to TSW, no certificate is issued, and no real laboratory or MPI assurance is fabricated.
+`npm run demo:live` performs a real HTTP fetch against the public NZ Customs tariff page, checks for tariff/classification content, and records response metadata plus a SHA-256 snapshot hash. The normal demo uses deterministic snapshots so judging is repeatable. No request is submitted to TSW, no certificate is issued, and no real laboratory or MPI assurance is fabricated.
+
+`npm run demo:incident` opens the same dashboard with Incident Room controls. Click any
+of the six faults to replay a `RELEASE -> BLOCKED` branch, then restore the baseline.
+The page shows evidence coverage, fault detection, parallel agent count and a labelled
+pilot time proxy. These are reproducible fixture metrics, not a claim about a live
+enterprise's historical savings.
 
 The demo also writes `dist/beetrust-dashboard.html`, a self-contained runtime view of the DAG, evidence gates, red-team outcomes and `SkillMessage/v1` timeline.
 
@@ -62,7 +74,7 @@ Every dispatch event uses `SkillMessage/v1`:
 
 All seven roles register their trigger words in `src/trigger-registry.ts`, so an incoming command can be routed to one or more skills without introducing a second protocol.
 
-`src/framework-bridge.ts` emits GraphFlow-style AutoGen and planner/worker AgentVerse team descriptors from the same DAG. The local runner stays dependency-free and deterministic for judging; a production deployment can replace the handler transport with a real AutoGen or AgentVerse runtime while keeping `SkillMessage/v1` unchanged.
+`src/framework-bridge.ts` emits GraphFlow-style AutoGen and planner/worker AgentVerse team descriptors from the same DAG. `src/framework-runtime.ts` compiles and executes the handlers through the open-source LangGraph `StateGraph` runtime: independent agents run concurrently, barrier dependencies are enforced, retries are observed, and every hand-off is a `SkillMessage/v1`. The graph has no model or network dependency, so judging remains deterministic; a production deployment can replace the transport while keeping the contract unchanged.
 
 The workflow is `Intent Input -> Task Decomposition / Planning -> Multi-Agent Division of Labor & Collaboration -> Result Completion & Monitoring`. Fingerprint, custody and MPI roots can run independently; customs waits for MPI; adversary waits for operational outputs; monitoring is the final release gate. `observeSwarm()` reports root-agent parallelism, dependency edges, critical path and per-agent message counts for runtime visualization.
 
@@ -81,4 +93,4 @@ The demonstrator uses Comvita Limited as the named New Zealand case owner becaus
 - MFAT guide to using free trade agreements: https://www.mfat.govt.nz/en/trade/how-we-help-exporters/guide-to-using-free-trade-agreements-for-goods-exporters
 - Comvita public investor centre: https://comvita.co.nz/pages/investor-centre
 
-Each skill has a local `skills/<name>/SKILL.md` contract and supporting TypeScript scripts in `src/skills/<name>/index.ts` and `tests.ts`. The seven suites contain at least 20 cases each (the package currently runs 192 cases).
+Each skill has a local `skills/<name>/SKILL.md` contract and supporting TypeScript scripts in `src/skills/<name>/index.ts` and `tests.ts`. The seven suites contain at least 20 cases each (the package currently runs 192 cases). `npm run acceptance` also executes every runnable Skill example, checks contract sections, validates the knowledge package and verifies the two public demo decks are included in the release archive.

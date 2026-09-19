@@ -5,9 +5,11 @@ import { checkMpiMarketAccess } from "./skills/mpi-market-access/index.js";
 import { runCustomsSkill } from "./skills/customs-clearance/index.js";
 import { runAdversarySkill, injectFault, ALL_FAULTS } from "./skills/trade-risk-adversary/index.js";
 import { auditTradeCase } from "./skills/evidence-monitor/index.js";
-import { createTaskPlan, executeTaskPlan, parseIntent } from "./skills/orchestration-hub/index.js";
+import { createTaskPlan, parseIntent, type TaskHandler } from "./skills/orchestration-hub/index.js";
 import { SOURCE_REGISTRY } from "./rules.js";
-import type { FaultType, TradeCase, WorkflowOptions, WorkflowRun } from "./types.js";
+import { runFrameworkRuntime } from "./framework-runtime.js";
+import { calculateBusinessKpis } from "./kpis.js";
+import type { FaultType, SkillName, TradeCase, WorkflowOptions, WorkflowRun } from "./types.js";
 
 const REFERENCE_FINGERPRINT = { methylglyoxal: 0.62, dihydroxyacetone: 0.18, hydroxymethylfurfural: 0.31, sugarProfile: 0.44, pollenDNA: 0.28, moisture: 0.55, conductivity: 0.17, delta13C: 0.39 };
 const SAMPLE_CSV = Object.entries(REFERENCE_FINGERPRINT).map(([name, value]) => `${name},${value}`).join("\n");
@@ -44,15 +46,16 @@ export function createDemoCase(intentText = "Release 1000 jars of UMF Mānuka ho
 export async function runTradeCase(intentText?: string, options: WorkflowOptions = {}): Promise<WorkflowRun> {
   const tradeCase = createDemoCase(intentText);
   const plan = createTaskPlan(tradeCase.caseId, tradeCase.intent);
-  const execution = await executeTaskPlan(plan, tradeCase, {
+  const handlers: Partial<Record<SkillName, TaskHandler>> = {
     "fingerprint-evidence": ({ tradeCase: current }) => { const result = compareFingerprint({ batchId: current.batchId, sampleCsv: current.sampleCsv, reference: current.referenceFingerprint, referenceBatchId: current.referenceBatchId }); current.fingerprint = result; return result; },
     "custody-ledger": ({ tradeCase: current }) => { const result = buildHashChain(current.custodyEvents); current.custody = result; return result; },
     "mpi-market-access": ({ tradeCase: current }) => { const result = checkMpiMarketAccess(current.destination, current.mpiEvidence); current.mpi = result; return result; },
     "customs-clearance": async ({ tradeCase: current }) => { const result = await runCustomsSkill({ ...current.customsInput, liveSourceLookup: options.liveSources }); current.customs = result; return result; },
     "trade-risk-adversary": ({ tradeCase: current }) => { const result = runAdversarySkill(current); current.adversary = result; return result; },
     "evidence-monitor": ({ tradeCase: current }) => { const result = auditTradeCase(current); current.monitor = result; return result; }
-  });
-  tradeCase.messages.push(...execution.messages);
+  };
+  const runtime = await runFrameworkRuntime(plan, tradeCase, handlers, options.runtimeProvider ?? "langgraph-stategraph");
+  tradeCase.messages.push(...runtime.messages);
   const baseline = tradeCase.monitor ?? auditTradeCase(tradeCase);
   const redTeam: WorkflowRun["redTeam"] = [];
   if (options.includeRedTeam !== false) {
@@ -64,7 +67,8 @@ export async function runTradeCase(intentText?: string, options: WorkflowOptions
       redTeam.push({ fault, decision: mutated.monitor?.decision ?? "BLOCKED", findings: mutated.adversary?.findings ?? [] });
     }
   }
-  return { tradeCase, plan, baseline, redTeam };
+  const kpis = calculateBusinessKpis(plan, baseline, redTeam, tradeCase.messages);
+  return { tradeCase, plan, baseline, redTeam, frameworkRuntime: runtime.summary, kpis };
 }
 
 async function runStagesWithoutPlan(tradeCase: TradeCase, options: WorkflowOptions, activeFaults: FaultType[]): Promise<void> {

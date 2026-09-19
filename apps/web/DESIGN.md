@@ -13,10 +13,26 @@ The product is a trade-release control room for a New Zealand honey exporter. A 
 - MPI rules are versioned by destination and conservative by default; stale evidence and rule conflicts are explicit blocked gates.
 - Customs generation creates three document objects, costs and assumptions, and can perform a live public Customs page availability check.
 - The red team runs six controlled fault injections against cloned cases; the auditor recomputes the decision from evidence rather than trusting agent prose.
+- The framework runtime compiles the same DAG with the open-source LangGraph `StateGraph`, records per-agent attempts and exposes runtime monitoring rather than stopping at static team descriptors.
+- Customs live mode reads the public tariff page, checks for tariff/classification content, stores HTTP status, response length and a SHA-256 snapshot hash, and falls back to `REVIEW` when the source cannot be verified.
 
 ## Depth of distillation
 
 The final monitor compresses hundreds of potential facts into five gates, an evidence matrix, a 0–100 score, a release state and next actions. Every gate retains a reason and evidence reference, so a judge can drill back from the final decision to the responsible role and source URL.
+
+The `knowledge/` package records the public source finding, rule ID, code path and test
+reference. The enterprise layer is explicitly synthetic and uses only Comvita's public
+investor context. This keeps the demonstration verifiable without inventing private SOPs.
+
+## Measurable business loop
+
+The release desk measures evidence coverage, adversarial fault detection, parallel root
+agents, total message volume and a pilot time proxy. The current fixture reports 100%
+evidence coverage and fault detection, three parallel roots, and a deterministic estimate
+from 108 manual minutes to 32 orchestrated minutes. The estimate is labelled as a pilot
+target until a real exporter supplies operator telemetry. The commercial loop is:
+
+`lab/custody inputs -> MPI and Customs checks -> broker-ready drafts -> release/block decision -> red-team regression evidence -> retained case record`.
 
 ## Seven-day build plan for two people
 
@@ -32,10 +48,11 @@ Suggested split: Person A owns orchestration, MPI, customs and dashboard; Person
 
 ## Demo script
 
-1. Run `npm run demo` and show the `RELEASE (100/100)` baseline.
-2. Open `dist/beetrust-dashboard.html` and point to the DAG, five gates and message timeline.
-3. Show the generated invoice, packing list and TSW draft are reviewable objects, not a false submission.
-4. Walk through the six red-team rows; each produces `BLOCKED` with a different observable reason.
-5. Change one input (for example, remove the harvest declaration) and rerun to show deterministic hold behavior.
+1. Run `npm run demo:incident` and show the `RELEASE (100/100)` baseline and KPI cards.
+2. Open `dist/beetrust-dashboard.html` and point to the DAG, five gates, runtime provider and SkillMessage timeline.
+3. Click `Inject` on `fingerprint-mismatch` and then `destination-change`; show the live badge changing to `BLOCKED` and restore `RELEASE`.
+4. Show the generated invoice, packing list and TSW draft are reviewable objects, not a false submission.
+5. Run `npm run demo:live` to show the real Customs page fetch, content marker and snapshot hash.
+6. Run `npm run acceptance` and show every example, source mapping, invalid-input fallback and red-team branch passes.
 
 The demo fixture is synthetic and names Comvita Limited only as a publicly verifiable case owner. It is not evidence that Comvita made the shipment. Production use needs accredited laboratory records, current MPI destination requirements, broker-confirmed tariff classification and authorised exporter credentials.

@@ -8,6 +8,11 @@
   "representativeEnterprise": "New Zealand honey exporter and broker workflow (synthetic demonstrator)",
   "communicationSchema": "SkillMessage/v1",
   "evidenceSources": "evidence-source-register.json",
+  "knowledge": "knowledge",
+  "publicMaterials": [
+    "BeeTrust_TrackB_E2E_Demo_2026-09-19-feedback.pptx",
+    "BeeTrust_TrackB_E2E_Demo_2026-09-19-feedback-zh.pptx"
+  ],
   "mainPipeline": [
     "Intent Input",
     "Task Decomposition / Planning",
@@ -89,11 +94,14 @@
     "language": "TypeScript",
     "validationCommand": "npm run acceptance",
     "packageCommand": "npm run pack:trackb",
-    "externalRuntime": "NOT_VERIFIED"
+    "externalRuntime": "LangGraph 1.4.16 local adapter (GraphFlow-compatible)",
+    "runtimeAdapter": "src/framework-runtime.ts",
+    "runtimeVersion": "langgraph/1.4.16-beetrust-adapter/1.0",
+    "dependencies": ["@langchain/langgraph@^1.4.16"]
   },
   "platformIntegration": {
     "wesomeCloudAgent": "NOT_VERIFIED",
     "workHubPublication": "NOT_VERIFIED",
-    "autogenOrAgentVerseLiveRuntime": "NOT_VERIFIED"
+    "autogenOrAgentVerseLiveRuntime": "LOCAL_COMPATIBLE_RUNTIME_VERIFIED"
   }
 }
