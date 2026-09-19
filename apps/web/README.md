@@ -1,4 +1,4 @@
-# BeeTrust Trade War Room
+# BeeTrust Honey Export Release Desk
 
 BeeTrust is a deterministic TypeScript MVP for the SP-A Collaborative Orchestration Hub scenario. It models one New Zealand Mānuka honey export case from intent to a broker-ready release recommendation.
 

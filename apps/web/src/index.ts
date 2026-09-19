@@ -23,7 +23,7 @@ async function main(): Promise<void> {
   const workflow = await runTradeCase(undefined, { liveSources: args.has("--live"), includeRedTeam: true });
   const dashboardPath = fileURLToPath(new URL("./beetrust-dashboard.html", import.meta.url));
   writeFileSync(dashboardPath, renderDashboardHtml(workflow), "utf8");
-  console.log("BeeTrust Trade War Room");
+  console.log("BeeTrust Honey Export Release Desk");
   console.log(`Case: ${workflow.tradeCase.caseId} | Batch: ${workflow.tradeCase.batchId}`);
   console.log(`Baseline decision: ${workflow.baseline.decision} (${workflow.baseline.score}/100)`);
   console.log("DAG levels: " + renderPlanLevels(workflow.plan));
