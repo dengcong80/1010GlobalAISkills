@@ -20,6 +20,8 @@ async function main(): Promise<void> {
     if (!report.allPassed) process.exitCode = 1;
     return;
   }
+  const traceEnabled = args.has("--live") || args.has("--incident") || args.has("--trace");
+  if (traceEnabled) process.env.BEETRUST_TRACE = "1";
   const workflow = await runTradeCase(undefined, { liveSources: args.has("--live"), includeRedTeam: true });
   const dashboardPath = fileURLToPath(new URL("./beetrust-dashboard.html", import.meta.url));
   writeFileSync(dashboardPath, renderDashboardHtml(workflow), "utf8");
@@ -34,7 +36,7 @@ async function main(): Promise<void> {
   console.log(`Runtime events: ${workflow.tradeCase.messages.length} (see JSON/API for full SkillMessage/v1 payloads)`);
   console.log(`Dashboard: ${dashboardPath}`);
   if (args.has("--incident")) console.log("Incident Room: use the Inject buttons in the dashboard to replay faults and restore the baseline.");
-  console.log(renderRuntimeTimeline(workflow.tradeCase.messages.slice(0, 12)));
+  if (!traceEnabled) console.log(renderRuntimeTimeline(workflow.tradeCase.messages.slice(0, 12)));
   console.log("Red-team decisions:");
   for (const scenario of workflow.redTeam) console.log(`  ${scenario.fault.padEnd(24)} ${scenario.decision} | ${scenario.findings[0]?.observed ?? "no active finding"}`);
   console.log(JSON.stringify({ baseline: workflow.baseline, frameworkRuntime: workflow.frameworkRuntime, kpis: workflow.kpis, generatedDocuments: workflow.tradeCase.customs?.documents.map((document) => document.documentType), liveSourceLookup: args.has("--live") }, null, 2));

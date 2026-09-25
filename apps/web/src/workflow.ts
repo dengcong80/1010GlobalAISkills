@@ -46,6 +46,11 @@ export function createDemoCase(intentText = "Release 1000 jars of UMF Mānuka ho
 export async function runTradeCase(intentText?: string, options: WorkflowOptions = {}): Promise<WorkflowRun> {
   const tradeCase = createDemoCase(intentText);
   const plan = createTaskPlan(tradeCase.caseId, tradeCase.intent);
+  if (process.env.BEETRUST_TRACE === "1") {
+    const roots = plan.nodes.filter((node) => node.dependsOn.length === 0).map((node) => node.skill).join(", ");
+    const sequence = plan.nodes.filter((node) => node.dependsOn.length > 0).map((node) => node.skill).join(" -> ");
+    console.log(`[orchestration-hub] DAG_CREATED protocol=SkillMessage/v1 planId=${plan.planId} caseId=${plan.caseId} roots=[${roots}] sequence=${sequence}`);
+  }
   const handlers: Partial<Record<SkillName, TaskHandler>> = {
     "fingerprint-evidence": ({ tradeCase: current }) => { const result = compareFingerprint({ batchId: current.batchId, sampleCsv: current.sampleCsv, reference: current.referenceFingerprint, referenceBatchId: current.referenceBatchId }); current.fingerprint = result; return result; },
     "custody-ledger": ({ tradeCase: current }) => { const result = buildHashChain(current.custodyEvents); current.custody = result; return result; },

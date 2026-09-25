@@ -1,7 +1,8 @@
 import { deterministicId } from "../../crypto.js";
-import type { SkillMessage, SkillName, SwarmObservation, TaskNode, TaskPlan, TradeCase, TradeIntent } from "../../types.js";
+import type { SkillMessage, SkillMessageTaskState, SkillName, SwarmObservation, TaskNode, TaskPlan, TradeCase, TradeIntent } from "../../types.js";
 
 export const TRIGGER_WORDS = ["ORCHESTRATE", "TRADE_CASE", "PLAN", "DISPATCH", "RETRY"] as const;
+export const SKILL_MESSAGE_PROTOCOL = "SkillMessage/v1" as const;
 
 export interface TaskContext {
   tradeCase: TradeCase;
@@ -42,8 +43,12 @@ export function createTaskPlan(caseId: string, intent: TradeIntent): TaskPlan {
   return { planId: deterministicId("plan", { caseId, intent }), caseId, intent, nodes, communicationSchema: "SkillMessage/v1", horizon: ["intake", "evidence", "market-access", "customs", "adversarial-stress", "release-audit"] };
 }
 
-export function createMessage<T>(caseId: string, correlationId: string, skill: SkillName, type: SkillMessage<T>["type"], status: SkillMessage<T>["status"], payload: T, attempt = 1, evidenceRefs: string[] = []): SkillMessage<T> {
+export function createMessage<T>(caseId: string, correlationId: string, skill: SkillName, type: SkillMessage<T>["type"], status: SkillMessage<T>["status"], payload: T, attempt = 1, evidenceRefs: string[] = [], receiver = defaultReceiverFor(skill)): SkillMessage<T> {
   return {
+    sender: skill,
+    receiver,
+    protocol: SKILL_MESSAGE_PROTOCOL,
+    taskState: taskStateFor(type),
     id: deterministicId("msg", { caseId, correlationId, skill, type, attempt, payload }),
     caseId,
     correlationId,
@@ -55,6 +60,19 @@ export function createMessage<T>(caseId: string, correlationId: string, skill: S
     payload,
     evidenceRefs
   };
+}
+
+export function defaultReceiverFor(skill: SkillName): SkillName {
+  return skill === "evidence-monitor" ? "orchestration-hub" : "evidence-monitor";
+}
+
+export function taskStateFor(type: SkillMessage["type"]): SkillMessageTaskState {
+  if (type === "TASK_CREATED") return "PENDING";
+  if (type === "TASK_STARTED") return "RUNNING";
+  if (type === "TASK_RETRY") return "RETRY";
+  if (type === "TASK_FAILED") return "FAILED";
+  if (type === "EVIDENCE_APPENDED") return "SUCCESS";
+  return "SUCCESS";
 }
 
 export async function executeTaskPlan(plan: TaskPlan, tradeCase: TradeCase, handlers: Partial<Record<SkillName, TaskHandler>>): Promise<{ outputs: Partial<Record<SkillName, unknown>>; messages: SkillMessage[] }> {

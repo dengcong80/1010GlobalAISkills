@@ -1,5 +1,5 @@
 import { assertCase, assertEqual, runCases, type TestSummary } from "../../test-utils.js";
-import { createTaskPlan, executeTaskPlan, observeSwarm, parseIntent, renderPlanLevels } from "./index.js";
+import { createMessage, createTaskPlan, executeTaskPlan, observeSwarm, parseIntent, renderPlanLevels } from "./index.js";
 import { routeTriggers, TRIGGER_REGISTRY } from "../../trigger-registry.js";
 import type { TradeCase } from "../../types.js";
 
@@ -25,6 +25,10 @@ export function runTests(): TestSummary {
     () => assertCase(createTaskPlan("c", parseIntent("Ship honey")).nodes.find((node) => node.id === "customs")?.dependsOn.includes("mpi"), "customs dependency"),
     () => assertCase(createTaskPlan("c", parseIntent("Ship honey")).nodes.some((node) => node.skill === "custody-ledger"), "custody node"),
     () => assertEqual(createTaskPlan("c", parseIntent("Ship honey")).communicationSchema, "SkillMessage/v1", "schema"),
+    () => assertEqual(createMessage("c", "fingerprint", "fingerprint-evidence", "TASK_COMPLETED", "PASS", {}).sender, "fingerprint-evidence", "message sender"),
+    () => assertEqual(createMessage("c", "fingerprint", "fingerprint-evidence", "TASK_COMPLETED", "PASS", {}).receiver, "evidence-monitor", "message receiver"),
+    () => assertEqual(createMessage("c", "fingerprint", "fingerprint-evidence", "TASK_COMPLETED", "PASS", {}).protocol, "SkillMessage/v1", "message protocol"),
+    () => assertEqual(createMessage("c", "fingerprint", "fingerprint-evidence", "TASK_COMPLETED", "PASS", {}).taskState, "SUCCESS", "message task state"),
     () => assertCase(createTaskPlan("c", parseIntent("Ship honey")).planId.startsWith("plan_"), "deterministic plan id"),
     () => assertCase(createTaskPlan("c", parseIntent("Ship honey")).nodes.every((node) => node.maxAttempts === 2), "retry budget"),
     () => assertCase(createTaskPlan("c", parseIntent("Ship honey")).nodes.every((node) => node.purpose.length > 10), "node purpose"),

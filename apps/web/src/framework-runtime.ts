@@ -1,7 +1,6 @@
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
-import { deterministicId } from "./crypto.js";
 import type { SkillMessage, FrameworkRuntimeSummary, SkillName, StageStatus, TaskPlan, TradeCase } from "./types.js";
-import type { TaskHandler } from "./skills/orchestration-hub/index.js";
+import { createMessage, type TaskHandler } from "./skills/orchestration-hub/index.js";
 
 export interface FrameworkRuntimeResult {
   outputs: Partial<Record<SkillName, unknown>>;
@@ -45,14 +44,21 @@ export async function runFrameworkRuntime(
       let output: unknown;
       let succeeded = false;
       for (let attempt = 1; attempt <= node.maxAttempts && !succeeded; attempt += 1) {
-        messages.push(createRuntimeMessage(plan.caseId, node.id, node.skill, "TASK_STARTED", "RUNNING", { nodeId: node.id }, attempt));
+        const startedMessage = createMessage(plan.caseId, node.id, node.skill, "TASK_STARTED", "RUNNING", { nodeId: node.id }, attempt);
+        messages.push(startedMessage);
+        emitRuntimeProtocol(startedMessage, startedMessage.payload);
         try {
           output = await handler({ tradeCase: state.tradeCase, plan, outputs: state.outputs, attempt });
-          messages.push(createRuntimeMessage(plan.caseId, node.id, node.skill, "TASK_COMPLETED", "PASS", output, attempt, extractEvidenceRefs(output)));
+          const completedMessage = createMessage(plan.caseId, node.id, node.skill, "TASK_COMPLETED", "PASS", output, attempt, extractEvidenceRefs(output));
+          messages.push(completedMessage);
+          emitRuntimeProtocol(completedMessage, summarizeAgentOutput(node.skill, output));
+          emitAgentKeyLog(node.skill, output);
           succeeded = true;
         } catch (error) {
           const type = attempt < node.maxAttempts ? "TASK_RETRY" : "TASK_FAILED";
-          messages.push(createRuntimeMessage(plan.caseId, node.id, node.skill, type, "ERROR", { error: error instanceof Error ? error.message : String(error) }, attempt));
+          const errorMessage = createMessage(plan.caseId, node.id, node.skill, type, "ERROR", { error: error instanceof Error ? error.message : String(error) }, attempt);
+          messages.push(errorMessage);
+          emitRuntimeProtocol(errorMessage, errorMessage.payload);
           if (attempt === node.maxAttempts) throw error;
         }
       }
@@ -102,23 +108,51 @@ export async function runFrameworkRuntime(
   };
 }
 
-function createRuntimeMessage<T>(caseId: string, correlationId: string, skill: SkillName, type: SkillMessage<T>["type"], status: SkillMessage<T>["status"], payload: T, attempt: number, evidenceRefs: string[] = []): SkillMessage<T> {
-  return {
-    id: deterministicId("msg", { caseId, correlationId, skill, type, attempt, payload }),
-    caseId,
-    correlationId,
-    skill,
-    type,
-    timestamp: new Date().toISOString(),
-    attempt,
-    status,
-    payload,
-    evidenceRefs
-  };
-}
-
 function extractEvidenceRefs(output: unknown): string[] {
   if (!output || typeof output !== "object") return [];
   const refs = (output as { evidenceRefs?: unknown }).evidenceRefs;
   return Array.isArray(refs) ? refs.filter((value): value is string => typeof value === "string") : [];
+}
+
+function emitRuntimeProtocol(message: SkillMessage, payload: unknown): void {
+  if (process.env.BEETRUST_TRACE !== "1") return;
+  console.log(`[SkillMessage/v1] ${JSON.stringify({ sender: message.sender, receiver: message.receiver, protocol: message.protocol, taskState: message.taskState, id: message.id, caseId: message.caseId, correlationId: message.correlationId, skill: message.skill, type: message.type, timestamp: message.timestamp, attempt: message.attempt, status: message.status, evidenceRefs: message.evidenceRefs, payload })}`);
+}
+
+function emitAgentKeyLog(skill: SkillName, output: unknown): void {
+  if (process.env.BEETRUST_TRACE !== "1") return;
+  console.log(`[agent:${skill}] ${JSON.stringify(summarizeAgentOutput(skill, output))}`);
+  if (skill !== "custody-ledger" || !isRecord(output)) return;
+  const events = Array.isArray(output.events) ? output.events : [];
+  for (const event of events) {
+    if (!isRecord(event)) continue;
+    console.log(`[SHA-256][custody-ledger] eventId=${String(event.eventId)} previousHash=${String(event.previousHash)} hash=${String(event.hash)}`);
+  }
+  console.log(`[SHA-256][custody-ledger] headHash=${String(output.headHash)} verification=${String(output.status)} tamperedEventIds=${JSON.stringify(output.tamperedEventIds ?? [])}`);
+}
+
+function summarizeAgentOutput(skill: SkillName, output: unknown): Record<string, unknown> {
+  if (!isRecord(output)) return { value: output };
+  if (skill === "fingerprint-evidence") return { status: output.status, batchId: output.batchId, referenceBatchId: output.referenceBatchId, similarity: output.similarity, confidence: output.confidence, anomalies: output.anomalies, anomaliesDetected: output.anomaliesDetected ?? (Array.isArray(output.anomalies) && output.anomalies.length > 0), evidenceRefs: output.evidenceRefs };
+  if (skill === "custody-ledger") return { status: output.status, batchId: output.batchId, eventsChecked: Array.isArray(output.events) ? output.events.length : 0, headHash: output.headHash, tamperedEventIds: output.tamperedEventIds, evidenceRefs: output.evidenceRefs };
+  if (skill === "mpi-market-access") {
+    const checks = Array.isArray(output.checks) ? output.checks.filter(isRecord) : [];
+    return { status: output.status, destination: output.destination, ruleVersion: output.ruleVersion, checksPassed: checks.filter((check) => check.passed === true).length, checksTotal: checks.length, missingEvidence: output.missingEvidence, evidenceRefs: output.evidenceRefs };
+  }
+  if (skill === "customs-clearance") {
+    const hsCandidates = Array.isArray(output.hsCandidates) ? output.hsCandidates : [];
+    const documents = Array.isArray(output.documents) ? output.documents : [];
+    const totals = isRecord(output.totals) ? output.totals : {};
+    return { status: output.status, hsCandidates, estimatedLandedValueNzd: totals.estimatedLandedValueNzd, documents: documents.map((document) => isRecord(document) ? document.documentType : document), validationIssues: output.validationIssues, evidenceRefs: output.evidenceRefs };
+  }
+  if (skill === "trade-risk-adversary") return { status: output.status, activeFaults: output.activeFaults, findings: Array.isArray(output.findings) ? output.findings : [], evidenceRefs: output.evidenceRefs };
+  if (skill === "evidence-monitor") {
+    const gates = Array.isArray(output.gates) ? output.gates.filter(isRecord).map((gate) => ({ gate: gate.gate, status: gate.status, evidenceRefs: gate.evidenceRefs })) : [];
+    return { decision: output.decision, score: output.score, gates, missingEvidence: output.missingEvidence, nextActions: output.nextActions };
+  }
+  return output;
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return typeof value === "object" && value !== null;
 }

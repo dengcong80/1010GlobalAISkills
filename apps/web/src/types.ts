@@ -9,6 +9,7 @@ export type SkillName =
 
 export type StageStatus = "PASS" | "REVIEW" | "BLOCKED";
 export type ReleaseDecision = "RELEASE" | "REVIEW" | "BLOCKED";
+export type SkillMessageTaskState = "PENDING" | "RUNNING" | "SUCCESS" | "RETRY" | "FAILED" | "ERROR";
 export type FaultType =
   | "fingerprint-mismatch"
   | "batch-id-tamper"
@@ -46,6 +47,10 @@ export interface TaskPlan {
 }
 
 export interface SkillMessage<T = unknown> {
+  sender: SkillName;
+  receiver: SkillName;
+  protocol: "SkillMessage/v1";
+  taskState: SkillMessageTaskState;
   id: string;
   caseId: string;
   correlationId: string;
@@ -80,6 +85,7 @@ export interface FingerprintResult {
   similarity: number;
   confidence: number;
   anomalies: string[];
+  anomaliesDetected: boolean;
   evidenceRefs: string[];
   disclaimer: string;
 }

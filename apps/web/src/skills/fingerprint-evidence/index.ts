@@ -66,6 +66,7 @@ export function compareFingerprint(input: FingerprintInput): FingerprintResult {
     similarity: round(similarity),
     confidence: round(confidence),
     anomalies,
+    anomaliesDetected: anomalies.length > 0,
     evidenceRefs: [deterministicId("lab-evidence", { batchId: input.batchId, sample: input.sampleCsv, referenceBatchId: input.referenceBatchId })],
     disclaimer: "Prototype similarity scoring supports triage; it is not a laboratory certificate, UMF licence or MPI assurance."
   };

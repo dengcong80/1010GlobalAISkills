@@ -32,6 +32,10 @@ export function toAgentVerseTeamConfig(plan: TaskPlan): AgentVerseTeamConfig {
 
 export function validateFrameworkMessages(messages: SkillMessage[]): string[] {
   return messages.flatMap((message) => [
+    ...(message.sender ? [] : ["message.sender is required"]),
+    ...(message.receiver ? [] : ["message.receiver is required"]),
+    ...(message.protocol === "SkillMessage/v1" ? [] : ["message.protocol must be SkillMessage/v1"]),
+    ...(message.taskState ? [] : ["message.taskState is required"]),
     ...(message.caseId ? [] : ["message.caseId is required"]),
     ...(message.correlationId ? [] : ["message.correlationId is required"]),
     ...(message.evidenceRefs.every((ref) => typeof ref === "string") ? [] : ["message.evidenceRefs must contain strings"])

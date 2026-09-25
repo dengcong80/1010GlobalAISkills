@@ -10,7 +10,7 @@ The Trade Incident Commander turns one trade sentence into a dependency-aware DA
 
 **Business rules:** fingerprint, custody and MPI checks are independent roots; customs waits for MPI; adversary waits for all operational outputs; the monitor is the final gate. Same-level agents run concurrently and results are committed in plan order.
 
-**Output:** `TaskPlan` plus `SkillMessage/v1` lifecycle messages. Every message includes `caseId`, `correlationId`, `attempt`, `status`, `payload`, and `evidenceRefs`.
+**Output:** `TaskPlan` plus `SkillMessage/v1` lifecycle messages. Every message includes `sender`, `receiver`, `protocol`, `taskState`, `caseId`, `correlationId`, `attempt`, `status`, `payload`, and `evidenceRefs`.
 
 **Coordination behavior:** fingerprint, custody and MPI checks can start independently; customs waits for MPI; adversary waits for all operational outputs; the evidence monitor is the final gate. Each node has two attempts and emits a retry message after a transient failure.
 
