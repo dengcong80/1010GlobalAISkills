@@ -7,6 +7,7 @@ The package contains seven independently documented Skills covering trade orches
 ## Submission materials
 
 - Listing metadata: `submission-metadata.json`
+- ChatGPT Apps submission import: `chatgpt-app-submission.json`
 - Directory and composer icon: `assets/beetrust-plugin-icon.png`
 - Entry cover: `assets/beetrust-entry-cover.png`
 - Project home: https://github.com/dengcong80/1010GlobalAISkills/tree/main/beetrust-plugin

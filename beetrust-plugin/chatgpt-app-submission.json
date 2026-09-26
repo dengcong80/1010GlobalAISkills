@@ -1,0 +1,79 @@
+{
+  "$schema": "https://developers.openai.com/plugins/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "BeeTrust Honey Release Desk",
+    "subtitle": "Honey export release checks",
+    "description": "BeeTrust coordinates laboratory fingerprint evidence, tamper-evident custody, New Zealand MPI market-access checks, customs preparation, and controlled red-team testing before producing a RELEASE, REVIEW, or BLOCKED decision. It is decision support for exporters, brokers, compliance teams, and audit reviewers; it does not issue certificates or replace professional judgement.",
+    "category": "BUSINESS"
+  },
+  "tools": {},
+  "test_cases": [
+    {
+      "description": "Run the supported Australia release workflow across orchestration, evidence, custody, market access, customs, adversarial testing, and final monitoring.",
+      "user_prompt": "Release 1000 jars of UMF Mānuka honey from New Zealand to Australia for AU retail review.",
+      "file_attachment_urls": null,
+      "tools_triggered": "Skill: orchestration-hub → fingerprint-evidence, custody-ledger, mpi-market-access, customs-clearance, trade-risk-adversary, evidence-monitor",
+      "expected_output": "A TaskPlan and SkillMessage/v1 lifecycle trace ending in a baseline RELEASE decision, with evidence references and six controlled red-team scenarios that remain BLOCKED.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Validate a laboratory fingerprint against the versioned reference profile and apply the release thresholds.",
+      "user_prompt": "Compare the LAB_CSV against the reference batch and report similarity, confidence, and anomalies.",
+      "file_attachment_urls": null,
+      "tools_triggered": "Skill: fingerprint-evidence",
+      "expected_output": "A structured PASS result with similarity, confidence, anomalies, and evidence references when the supplied fixture matches the reference.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Verify the ordered farm, processor, warehouse, and carrier custody events using the tamper-evident hash chain.",
+      "user_prompt": "Run a tamper check on the custody ledger for the harvest and processor events.",
+      "file_attachment_urls": null,
+      "tools_triggered": "Skill: custody-ledger",
+      "expected_output": "A structured PASS result with event hashes, previousHash values, a final headHash, and zero tampered event IDs.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Check the supported Australia market-access evidence, including MPI rule version, RMP, OMAR, certificate, and freshness requirements.",
+      "user_prompt": "Check MPI market access and OMAR evidence for Australia.",
+      "file_attachment_urls": null,
+      "tools_triggered": "Skill: mpi-market-access",
+      "expected_output": "A structured PASS result with destination Australia, an empty missingEvidence list, the active ruleVersion, and evidence references.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Prepare a candidate customs classification, transparent landed-value estimate, and draft commercial documents without submitting anything to TSW.",
+      "user_prompt": "Prepare the HS_CODE candidate and PACKING_LIST draft for 1000 jars of UMF Mānuka honey to Australia.",
+      "file_attachment_urls": null,
+      "tools_triggered": "Skill: customs-clearance",
+      "expected_output": "A structured PASS or REVIEW result containing an HS candidate including 0409.00, landedValueNzd, document drafts, validation issues, and evidence references.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Reject malformed laboratory input without inventing marker values or issuing a pass.",
+      "user_prompt": "Compare this laboratory result: not a laboratory payload.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app returns a safe BLOCKED result with a validation finding and no fabricated confidence claim.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not infer market-access rules for a destination without a verified rule snapshot.",
+      "user_prompt": "Release 1000 jars of UMF Mānuka honey from New Zealand to an unsupported destination market.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app returns BLOCKED with the unsupported destination and a missing-rule finding instead of proceeding.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Preserve the baseline and block a cloned case when a controlled custody fault is injected.",
+      "user_prompt": "Run the controlled custody-batch-tampering red-team rehearsal and report the release decision.",
+      "file_attachment_urls": null,
+      "tools_triggered": "Skill: trade-risk-adversary → evidence-monitor",
+      "expected_output": "The cloned scenario returns BLOCKED with an active custody finding, while the untouched baseline remains RELEASE.",
+      "expected_output_url": null
+    }
+  ]
+}
