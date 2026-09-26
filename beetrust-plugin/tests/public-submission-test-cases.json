@@ -1,0 +1,72 @@
+{
+  "package": "beetrust-plugin",
+  "version": "1.0.0",
+  "positiveCases": [
+    {
+      "id": "positive-01-baseline-release",
+      "title": "Run the supported Australia release workflow",
+      "userPrompt": "Release 1000 jars of UMF Mānuka honey from New Zealand to Australia for AU retail review.",
+      "expectedBehavior": "The orchestration Skill parses the intent, creates the dependency-aware plan, runs the operational evidence Skills, and sends the assembled evidence to the final monitor.",
+      "expectedResultShape": "A TaskPlan, SkillMessage/v1 lifecycle events, a baseline decision of RELEASE, evidence references, and six controlled red-team scenarios that remain BLOCKED.",
+      "fixtureData": "The built-in supported happy-path trade fixture; no private data required."
+    },
+    {
+      "id": "positive-02-fingerprint-pass",
+      "title": "Validate a laboratory fingerprint",
+      "userPrompt": "Compare the LAB_CSV against the reference batch and report similarity, confidence, and anomalies.",
+      "expectedBehavior": "The fingerprint-evidence Skill parses the CSV, normalises the known honey markers, compares them with the reference profile, and applies its release thresholds.",
+      "expectedResultShape": "A structured result containing status PASS, similarity, confidence, anomalies, and evidenceRefs when the supplied fixture matches the reference.",
+      "fixtureData": "The versioned reference profile at skills/fingerprint-evidence/resources/reference-profile.example.json and a CSV with the same marker values."
+    },
+    {
+      "id": "positive-03-custody-pass",
+      "title": "Verify the chain of custody",
+      "userPrompt": "Run a tamper check on the custody ledger for the harvest and processor events.",
+      "expectedBehavior": "The custody-ledger Skill canonicalises each event, links it to the previous hash, and verifies batch identity, payload integrity, ordering, and the final head hash.",
+      "expectedResultShape": "A structured result containing status PASS, event hashes, previousHash values, a headHash, and zero tamperedEventIds.",
+      "fixtureData": "The example event sequence at skills/custody-ledger/resources/custody-event.example.json."
+    },
+    {
+      "id": "positive-04-mpi-pass",
+      "title": "Check Australia MPI market access",
+      "userPrompt": "Check MPI market access and OMAR evidence for Australia.",
+      "expectedBehavior": "The mpi-market-access Skill checks the destination rule snapshot, listed beekeeper status, harvest declaration, RMP, OMAR, certificate, trade certification, freshness, and rule version.",
+      "expectedResultShape": "A structured result containing destination Australia, status PASS, missingEvidence as an empty list, ruleVersion, and evidenceRefs.",
+      "fixtureData": "The supported Australia evidence fixture and market rule snapshot at skills/mpi-market-access/resources/market-rule-snapshot.json."
+    },
+    {
+      "id": "positive-05-customs-draft",
+      "title": "Prepare a customs candidate and landed-value estimate",
+      "userPrompt": "Prepare the HS_CODE candidate and PACKING_LIST draft for 1000 jars of UMF Mānuka honey to Australia.",
+      "expectedBehavior": "The customs-clearance Skill validates the trade lines, proposes the honey HS candidate, calculates the transparent case-supplied estimate, and drafts commercial documents without submitting to TSW.",
+      "expectedResultShape": "A structured result containing status PASS or REVIEW, HS candidates including 0409.00, landedValueNzd, document drafts, validationIssues, and evidenceRefs.",
+      "fixtureData": "The supported trade fixture and the HS candidate snapshot at skills/customs-clearance/resources/hs-candidate-snapshot.json."
+    }
+  ],
+  "negativeCases": [
+    {
+      "id": "negative-01-malformed-lab-data",
+      "title": "Fail closed on malformed laboratory input",
+      "userPrompt": "Compare this laboratory result: not a laboratory payload.",
+      "expectedBehavior": "The fingerprint-evidence Skill must not invent marker values or issue a pass. It returns a safe blocked result and identifies the malformed input.",
+      "expectedResultShape": "status BLOCKED with an anomaly or validation message and no fabricated confidence claim.",
+      "fixtureData": "The literal malformed string supplied in the prompt."
+    },
+    {
+      "id": "negative-02-unsupported-market",
+      "title": "Block an unsupported destination",
+      "userPrompt": "Release 1000 jars of UMF Mānuka honey from New Zealand to an unsupported destination market.",
+      "expectedBehavior": "The orchestration or MPI Skill stops because the package does not have a verified rule snapshot for the destination. It must not infer a market-access rule.",
+      "expectedResultShape": "status BLOCKED with the destination and a missing or unsupported-market finding.",
+      "fixtureData": "No destination-specific fixture; the absence of a supported rule is the test condition."
+    },
+    {
+      "id": "negative-03-tampered-custody-event",
+      "title": "Block a tampered custody event",
+      "userPrompt": "Run the controlled custody-batch-tampering red-team rehearsal and report the release decision.",
+      "expectedBehavior": "The trade-risk-adversary Skill clones the baseline case, injects the controlled fault, and evidence-monitor must observe the integrity failure while preserving the original baseline.",
+      "expectedResultShape": "The cloned scenario returns decision BLOCKED with an active custody finding; the untouched baseline remains RELEASE.",
+      "fixtureData": "The controlled fault catalogue at skills/trade-risk-adversary/resources/fault-catalog.json."
+    }
+  ]
+}

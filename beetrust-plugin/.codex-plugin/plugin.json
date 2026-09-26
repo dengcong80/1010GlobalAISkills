@@ -1,0 +1,18 @@
+{
+  "name": "beetrust-plugin",
+  "version": "1.0.0",
+  "description": "Evidence-backed cross-border Mānuka honey release workflows for trade operations, compliance, customs, custody, and risk assurance.",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "BeeTrust Plugin",
+    "shortDescription": "Evidence-backed honey export release workflows.",
+    "longDescription": "BeeTrust verifies laboratory evidence, chain of custody, New Zealand MPI market access, customs readiness, and adversarial trade risk before a cross-border honey release decision.",
+    "developerName": "BeeTrust",
+    "category": "Business",
+    "capabilities": [],
+    "defaultPrompt": "Release 1000 jars of UMF Mānuka honey from New Zealand to Australia for AU retail review."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "beetrust-plugin",
+  "version": "1.0.0",
+  "description": "BeeTrust evidence-backed cross-border Mānuka honey release package.",
+  "type": "module",
+  "private": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node dist/index.js --test",
+    "acceptance": "npm run build && node dist/index.js --acceptance",
+    "verify:package": "npm run build && tsc -p tsconfig.scripts.json && node dist-scripts/verify-package.js",
+    "verify": "npm run verify:package && npm test && npm run acceptance"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@langchain/langgraph": "^1.4.16"
+  }
+}

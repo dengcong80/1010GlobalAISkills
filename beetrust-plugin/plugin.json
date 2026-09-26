@@ -1,0 +1,6 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "beetrust-plugin",
+  "version": "1.0.0",
+  "description": "Evidence-backed cross-border Mānuka honey release workflows for trade operations, compliance, customs, custody, and risk assurance."
+}
