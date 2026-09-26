@@ -7,7 +7,8 @@ The package contains seven independently documented Skills covering trade orches
 ## Submission materials
 
 - Listing metadata: `submission-metadata.json`
-- Logo: `assets/beetrust-entry-cover.png`
+- Directory and composer icon: `assets/beetrust-plugin-icon.png`
+- Entry cover: `assets/beetrust-entry-cover.png`
 - Project home: https://github.com/dengcong80/1010GlobalAISkills/tree/main/beetrust-plugin
 - Support: `docs/support.md`
 - Privacy policy: `docs/privacy-policy.md`

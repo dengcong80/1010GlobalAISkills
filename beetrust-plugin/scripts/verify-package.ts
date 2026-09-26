@@ -22,6 +22,7 @@ function requirePath(relativePath: string): void {
 requirePath("plugin.json");
 requirePath("submission-metadata.json");
 requirePath("assets/beetrust-entry-cover.png");
+requirePath("assets/beetrust-plugin-icon.png");
 requirePath("docs/support.md");
 requirePath("docs/privacy-policy.md");
 requirePath("docs/terms-of-use.md");

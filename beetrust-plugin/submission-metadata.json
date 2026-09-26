@@ -9,8 +9,9 @@
   "supportUrl": "https://github.com/dengcong80/1010GlobalAISkills/issues",
   "privacyPolicyUrl": "https://github.com/dengcong80/1010GlobalAISkills/blob/main/beetrust-plugin/docs/privacy-policy.md",
   "termsUrl": "https://github.com/dengcong80/1010GlobalAISkills/blob/main/beetrust-plugin/docs/terms-of-use.md",
-  "logoFile": "assets/beetrust-entry-cover.png",
-  "logoUrl": "https://github.com/dengcong80/1010GlobalAISkills/raw/main/beetrust-plugin/assets/beetrust-entry-cover.png",
+  "logoFile": "assets/beetrust-plugin-icon.png",
+  "logoUrl": "https://github.com/dengcong80/1010GlobalAISkills/raw/main/beetrust-plugin/assets/beetrust-plugin-icon.png",
+  "entryCoverFile": "assets/beetrust-entry-cover.png",
   "availability": {
     "countries": ["New Zealand", "Australia"],
     "scopeNote": "The published demonstration and rule snapshots support New Zealand-origin honey exports to Australia. Other destinations require new rule validation before use."
