@@ -6,6 +6,8 @@
   "private": false,
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "start": "node dist/mcp-server.js",
+    "mcp": "npm run build && npm start",
     "test": "npm run build && node dist/index.js --test",
     "acceptance": "npm run build && node dist/index.js --acceptance",
     "verify:package": "npm run build && tsc -p tsconfig.scripts.json && node dist-scripts/verify-package.js",
