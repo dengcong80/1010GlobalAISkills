@@ -1,0 +1,14 @@
+BeeTrust Honey Export Release Desk
+Track B Commerce | SP-A Collaborative Orchestration Hub
+
+BeeTrust addresses a real release-desk problem for New Zealand Manuka exporter Comvita Limited: deciding whether a cross-border batch is ready for broker review while keeping quality, custody, market-access, Customs, and incident evidence consistent. Comvita FY25 results reported NZD 15.1m inventory provisions, NZD 12.6m cost reductions, internal complexity, and supply-chain simplification. FY26 reported inventory normalisation, operating expenses down NZD 12.2m, and continued procurement, cost-management, and supply-chain-efficiency focus. These disclosures establish context, not private workflow metrics.
+
+The practical pain is fragmented hand-off. A valid laboratory result can be linked to the wrong batch; a custody event can carry a changed batch ID; MPI evidence is destination-specific; Customs classifications, values, declarations, and TSW drafts must be current. Separate channels cause repeated searching, re-keying, reconciliation, late exception discovery, and release delay.
+
+BeeTrust converts the intent, "Release 1000 jars of UMF Mānuka honey from New Zealand to Australia for AU retail review.", into a dependency-aware TypeScript workflow. Seven Skills coordinate intake, laboratory-marker triage, SHA-256 custody verification, versioned Australia evidence, HS and landed-cost drafts, six-fault replay, and a five-gate decision of RELEASE, REVIEW, or BLOCKED with next actions.
+
+Results: fixture returns RELEASE 100/100 with five PASS gates, 100% evidence coverage, three parallel roots, a four-stage path, a verified custody headHash, HS 0409.00 candidates, and a NZD 13,020 landed-value estimate. For 1,000 jars, this is NZD 13.02 per jar and is a transaction-value check, not value created or savings. Live mode hashes the NZ Customs tariff source. Incident mode detects all six faults as BLOCKED while preserving the baseline. The package passed 198 self-tests, acceptance checks, and live and incident demonstrations.
+
+The 108-minute manual versus 32-minute orchestrated comparison is a prototype proxy, not a Comvita saving: it is a 70.4% reduction in coordination time. At 250 cases, baseline is 450 hours (NZD 24,750 at NZD 55/hour); BeeTrust reduces it to 133 hours and releases NZD 17,417 capacity, 70.4% of process cost. This is a pilot signal, not realised cash saving. Validate at least 50% lower coordination time, 25% fewer evidence rework events, 60% lower document preparation, and 95% fault detection.
+
+BeeTrust is decision support, not regulatory authority. It does not replace laboratory testing, MPI certification, Customs or broker judgement, enterprise records, or management approval. The case uses public disclosures and a synthetic fixture; no private SOP, shipment record, or realised saving is claimed. Production requires refreshed sources, validated classifications and rates, approved data, and human sign-off.

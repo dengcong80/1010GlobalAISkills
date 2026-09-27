@@ -1,0 +1,75 @@
+1
+00:00:00,000 --> 00:00:08,000
+This is a representative enterprise scenario based on public materials about Comvita Limited.
+
+2
+00:00:08,000 --> 00:00:16,000
+The shipment and records are synthetic demonstrator fixtures.
+
+3
+00:00:16,000 --> 00:00:24,000
+BeeTrust does not issue government certificates or claim measured enterprise savings.
+
+4
+00:00:24,000 --> 00:00:40,000
+BeeTrust helps a New Zealand honey exporter and broker decide whether a batch can be released for Australian retail review.
+
+5
+00:00:40,000 --> 00:00:58,000
+It reconciles laboratory evidence, custody history, MPI market access, customs preparation, and exception risk in one auditable workflow.
+
+6
+00:00:58,000 --> 00:01:18,000
+The orchestration hub parses the shipment intent and creates a dependency-aware DAG.
+Three root Skills start in parallel: fingerprint-evidence, custody-ledger, and mpi-market-access.
+
+7
+00:01:18,000 --> 00:01:42,000
+Fingerprint-evidence checks similarity and anomalies. Custody-ledger verifies previousHash, hash, and headHash.
+MPI market access checks destination rules, RMP, OMAR, certificates, freshness, and rule versions.
+
+8
+00:01:42,000 --> 00:02:04,000
+After the roots complete, customs-clearance prepares HS candidates, invoice and packing-list drafts, and a transparent estimate.
+No TSW submission is made.
+
+9
+00:02:04,000 --> 00:02:24,000
+Evidence-monitor evaluates five release gates from the evidence matrix.
+The baseline result is RELEASE with a score of 100 out of 100.
+
+10
+00:02:24,000 --> 00:02:48,000
+The red-team Skill clones the baseline and injects one controlled fault.
+The original case is not mutated in place.
+
+11
+00:02:48,000 --> 00:03:10,000
+The mutated case is BLOCKED because the custody identity no longer agrees with the case.
+The release is halted and the original baseline remains RELEASE.
+
+12
+00:03:10,000 --> 00:03:32,000
+The package fails closed for malformed laboratory data, unsupported destination rules, and invalid customs input.
+It does not invent evidence or silently continue.
+
+13
+00:03:32,000 --> 00:03:52,000
+The current fixture reports seven Skills, 198 passing self-tests, 100 percent evidence coverage, and six controlled faults blocked.
+
+14
+00:03:52,000 --> 00:04:12,000
+BeeTrust closes the loop from shipment intent to broker-ready release recommendation:
+collect evidence, verify custody, prepare documents, stress-test exceptions, and monitor the final gates.
+
+15
+00:04:12,000 --> 00:04:24,000
+The current fixture also reports three parallel root agents and a 70 percent time-reduction estimate.
+
+16
+00:04:24,000 --> 00:04:32,000
+This is a 70% pilot time proxy based on the deterministic fixture, not measured enterprise ROI.
+
+17
+00:04:32,000 --> 00:04:40,000
+The next step is to replace the fixtures with accredited laboratory records, current destination rules, and broker-confirmed tariff data.

@@ -37,7 +37,7 @@ export function renderDashboardHtml(run: WorkflowRun): string {
 </head>
 <body>
   <div class="hero">
-    <div class="hero-media" aria-hidden="true"><img src="../assets/beetrust-honey-hero.png" alt="New Zealand Manuka honey apiary and export warehouse" /></div>
+    <div class="hero-media" aria-hidden="true"><img src="assets/beetrust-honey-hero.png" alt="New Zealand Manuka honey apiary and export warehouse" /></div>
     <div class="hero-copy">
       <div class="hero-kicker">NZ MANUKA EXPORT CONTROL TOWER</div>
       <h1>BeeTrust Honey Export Release Desk</h1>
@@ -65,8 +65,8 @@ export function renderDashboardHtml(run: WorkflowRun): string {
       <div class="context-route"><span class="context-route-dot"></span><strong>Waikato Apiary</strong><span>→</span><strong>Food-grade processing</strong><span>→</span><strong>AU retail review</strong></div>
       <div class="context-tags"><span>1,000 jars</span><span>UMF Mānuka</span><span>NZ → AU</span><span>Auditable release</span></div>
     </div>
-    <div class="business-context-visual warehouse-visual"><img src="../assets/beetrust-export-warehouse.png" alt="Honey export warehouse with pallets and quality-control station" loading="lazy" /></div>
-    <div class="business-context-visual product-visual"><img src="../assets/beetrust-honey-jar-lab.png" alt="Manuka honey jar in a quality-control laboratory" loading="lazy" /><div class="product-caption"><span>Physical product evidence</span><strong>Batch identity verified</strong></div></div>
+    <div class="business-context-visual warehouse-visual"><img src="assets/beetrust-export-warehouse.png" alt="Honey export warehouse with pallets and quality-control station" loading="lazy" /></div>
+    <div class="business-context-visual product-visual"><img src="assets/beetrust-honey-jar-lab.png" alt="Manuka honey jar in a quality-control laboratory" loading="lazy" /><div class="product-caption"><span>Physical product evidence</span><strong>Batch identity verified</strong></div></div>
   </section>
 
   <section class="trade-control-grid" id="traceability-controls" aria-label="Traceability and cross-border compliance controls">
@@ -74,7 +74,7 @@ export function renderDashboardHtml(run: WorkflowRun): string {
       <div class="panel-eyebrow">DIGITAL PRODUCT PASSPORT · DEMO CASE</div>
       <div class="passport-layout">
         <div class="passport-jar-stage">
-          <img src="../assets/beetrust-traceability-jar.png" alt="Manuka honey product with a blank traceability label area" loading="lazy" />
+          <img src="assets/beetrust-traceability-jar.png" alt="Manuka honey product with a blank traceability label area" loading="lazy" />
           <div class="passport-label-overlay"><span class="brand-mark">BeeTrust</span><strong>MĀNUKA<span>™</span> TRACE</strong><small>NEW ZEALAND ORIGIN</small></div>
         </div>
         <div class="passport-copy">

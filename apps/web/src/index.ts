@@ -1,7 +1,7 @@
 import { runAllSelfTests } from "./self-test.js";
 import { runTradeCase } from "./workflow.js";
 import { observeSwarm, renderPlanLevels, renderRuntimeTimeline } from "./skills/orchestration-hub/index.js";
-import { writeFileSync } from "node:fs";
+import { cpSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderDashboardHtml } from "./dashboard.js";
 import { runAcceptance } from "./acceptance.js";
@@ -24,6 +24,9 @@ async function main(): Promise<void> {
   if (traceEnabled) process.env.BEETRUST_TRACE = "1";
   const workflow = await runTradeCase(undefined, { liveSources: args.has("--live"), includeRedTeam: true });
   const dashboardPath = fileURLToPath(new URL("./beetrust-dashboard.html", import.meta.url));
+  const assetsPath = fileURLToPath(new URL("./assets", import.meta.url));
+  const sourceAssetsPath = fileURLToPath(new URL("../assets", import.meta.url));
+  cpSync(sourceAssetsPath, assetsPath, { recursive: true, force: true });
   writeFileSync(dashboardPath, renderDashboardHtml(workflow), "utf8");
   console.log("BeeTrust Honey Export Release Desk");
   console.log(`Case: ${workflow.tradeCase.caseId} | Batch: ${workflow.tradeCase.batchId}`);
