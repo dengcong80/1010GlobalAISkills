@@ -24,6 +24,13 @@ const SERVER_VERSION = "1.0.0";
 const PROTOCOL_VERSION = "2025-03-26";
 const MAX_BODY_BYTES = 1_000_000;
 
+const READ_ONLY_TOOL_ANNOTATIONS = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+} as const;
+
 type JsonRpcId = string | number | null;
 type JsonRpcRequest = { jsonrpc?: string; id?: JsonRpcId; method?: string; params?: unknown };
 type JsonRpcResponse = { jsonrpc: "2.0"; id: JsonRpcId; result?: unknown; error?: { code: number; message: string; data?: unknown } };
@@ -32,6 +39,7 @@ const tools = [
   {
     name: "beetrust_orchestrate",
     description: "Parse the supported New Zealand-to-Australia honey release intent and return its dependency-aware SkillMessage/v1 task plan.",
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
     inputSchema: {
       type: "object",
       properties: { intent: { type: "string", description: "Supported release intent." }, caseId: { type: "string", description: "Optional case identifier." } },
@@ -42,6 +50,7 @@ const tools = [
   {
     name: "beetrust_fingerprint_evidence",
     description: "Compare a honey laboratory marker CSV with a reference profile and return similarity, confidence, anomalies, and evidence references.",
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
     inputSchema: {
       type: "object",
       properties: {
@@ -57,6 +66,7 @@ const tools = [
   {
     name: "beetrust_custody_ledger",
     description: "Build a tamper-evident SHA-256 custody chain and return previousHash, hash, headHash, and blocked event IDs.",
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
     inputSchema: {
       type: "object",
       properties: {
@@ -79,6 +89,7 @@ const tools = [
   {
     name: "beetrust_mpi_market_access",
     description: "Check the supported Australia MPI market-access evidence, freshness, mandatory documents, and rule-version consistency.",
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
     inputSchema: {
       type: "object",
       properties: {
@@ -92,6 +103,7 @@ const tools = [
   {
     name: "beetrust_customs_clearance",
     description: "Prepare candidate honey HS classification, transparent landed-cost totals, and draft commercial documents without submitting to TSW.",
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
     inputSchema: {
       type: "object",
       properties: {
@@ -104,6 +116,7 @@ const tools = [
   {
     name: "beetrust_trade_risk_adversary",
     description: "Replay controlled red-team faults against a cloned trade case and verify that the fault produces a BLOCKED finding while preserving the baseline.",
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
     inputSchema: {
       type: "object",
       properties: {
@@ -117,6 +130,7 @@ const tools = [
   {
     name: "beetrust_evidence_monitor",
     description: "Run the deterministic release evidence workflow and return the five release gates with a RELEASE, REVIEW, or BLOCKED decision.",
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
     inputSchema: {
       type: "object",
       properties: { intent: { type: "string" } },
