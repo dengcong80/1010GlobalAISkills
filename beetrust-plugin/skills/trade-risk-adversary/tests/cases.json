@@ -1,0 +1,8 @@
+{
+  "skill": "trade-risk-adversary",
+  "cases": [
+    { "id": "fingerprint-mismatch", "input": "Controlled fingerprint mismatch against a cloned case", "expectedStatus": "BLOCKED" },
+    { "id": "baseline-isolation", "input": "Any supported fault", "expectedStatus": "PASS", "expectedConstraint": "BASELINE_PRESERVED" },
+    { "id": "unknown-fault", "input": "An unknown fault name", "expectedStatus": "BLOCKED" }
+  ]
+}

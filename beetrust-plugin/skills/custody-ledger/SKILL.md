@@ -17,10 +17,10 @@ The Chain of Custody Agent creates a SHA-256 hash chain for farm, processor, war
 
 The chain is an evidence integrity layer, not a public blockchain or legal title registry. It records a reproducible head hash and the exact event IDs that fail verification.
 
-**Runnable example:** after `npm run build`, run `node skills/custody-ledger/scripts/run-example.mjs`.
+**Runnable example:** from this skill directory, run `node scripts/run-example.mjs`. The example uses only Node.js built-ins and the local fixture.
 
 **Output:** status, ordered events, head hash, tampered event IDs and evidence references.
 
 **Exceptions:** empty input, invalid timestamps, duplicate IDs, wrong batch IDs or altered payloads return `BLOCKED` with the affected event IDs.
 
-**Self-test:** `src/skills/custody-ledger/tests.ts` contains 25 cases covering genesis, ordering, payload tampering, link tampering, wrong batch IDs and empty input.
+**Self-test:** `tests/cases.json` contains local pass and block fixtures covering genesis, ordering, payload tampering, link tampering, wrong batch IDs and empty input.

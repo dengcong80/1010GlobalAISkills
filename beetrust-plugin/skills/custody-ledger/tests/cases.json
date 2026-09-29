@@ -1,0 +1,8 @@
+{
+  "skill": "custody-ledger",
+  "cases": [
+    { "id": "valid-chain", "input": "Two ordered events with one batch ID", "expectedStatus": "PASS" },
+    { "id": "payload-tamper", "input": "An event payload changes after hashing", "expectedStatus": "BLOCKED" },
+    { "id": "wrong-batch", "input": "An event uses a different batch ID", "expectedStatus": "BLOCKED" }
+  ]
+}

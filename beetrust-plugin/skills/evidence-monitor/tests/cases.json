@@ -1,0 +1,8 @@
+{
+  "skill": "evidence-monitor",
+  "cases": [
+    { "id": "complete-release", "input": "Five passing gates with evidence references", "expectedStatus": "RELEASE" },
+    { "id": "missing-evidence", "input": "A passing gate without an evidence reference", "expectedStatus": "BLOCKED" },
+    { "id": "upstream-block", "input": "An upstream skill is blocked", "expectedStatus": "BLOCKED" }
+  ]
+}

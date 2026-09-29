@@ -17,10 +17,10 @@ The MPI Compliance Agent evaluates destination-specific evidence for listed beek
 
 Rules are versioned snapshots with source URLs. Missing mandatory evidence, stale evidence or a rule-version conflict produces `BLOCKED`; unknown destination rules also default to a conservative block. This is a prototype decision-support layer and does not issue an MPI certificate.
 
-**Runnable example:** after `npm run build`, run `node skills/mpi-market-access/scripts/run-example.mjs`.
+**Runnable example:** from this skill directory, run `node scripts/run-example.mjs`. The example uses only Node.js built-ins and the local market-rule fixture.
 
 **Output:** check-by-check statuses, missing evidence, rule version, source URLs and evidence references.
 
 **Exceptions:** invalid dates, negative freshness, unknown destinations and missing documents return `BLOCKED`; non-critical uncertainty returns `REVIEW`.
 
-**Self-test:** `src/skills/mpi-market-access/tests.ts` contains 26 cases covering markets, every mandatory document, freshness boundaries, rule conflicts, evidence references and explanations.
+**Self-test:** `tests/cases.json` contains local pass and block fixtures covering markets, mandatory documents, freshness boundaries, rule conflicts, evidence references and explanations.

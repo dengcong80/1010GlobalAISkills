@@ -1,0 +1,8 @@
+{
+  "skill": "orchestration-hub",
+  "cases": [
+    { "id": "supported-intent", "input": "Release 1000 jars of UMF Mānuka honey from New Zealand to Australia", "expectedStatus": "PASS" },
+    { "id": "parallel-roots", "input": "A supported case plan", "expectedStatus": "PASS", "expectedConstraint": "THREE_PARALLEL_ROOTS" },
+    { "id": "empty-intent", "input": "", "expectedStatus": "BLOCKED" }
+  ]
+}

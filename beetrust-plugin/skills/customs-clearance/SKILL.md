@@ -15,12 +15,12 @@ The Customs Trade Agent proposes HS codes, calculates a transparent case-supplie
 
 **Business rules:** honey maps to candidate HS 0409.00 entries; the tariff response is fetched, content-inspected and SHA-256 hashed in live mode; TSW output is always draft-only.
 
-The skill can make a real HTTP availability check against the public NZ Customs tariff page when `liveSourceLookup` is enabled. It never submits to TSW. HS codes and rates remain candidates/assumptions until a broker or current tariff confirms them.
+The included example uses a local versioned tariff snapshot and never requires network access or submits to TSW. HS codes and rates remain candidates/assumptions until a broker or current tariff confirms them.
 
-**Runnable example:** after `npm run build`, run `node skills/customs-clearance/scripts/run-example.mjs`.
+**Runnable example:** from this skill directory, run `node scripts/run-example.mjs`. The example uses only Node.js built-ins and local fixtures.
 
 **Output:** HS candidates, landed-value totals, invoice/packing/TSW draft objects, source URLs, snapshot hash and assumptions.
 
 **Exceptions:** missing parties, invalid lines or non-finite rates return `BLOCKED`; unavailable live tariff content returns `REVIEW` with a manual verification action.
 
-**Self-test:** `src/skills/customs-clearance/tests.ts` contains 26 cases covering classification, calculations, document generation, validation, source references and draft-only behavior.
+**Self-test:** `tests/cases.json` contains local pass, review and block fixtures covering classification, calculations, document generation, validation, source references and draft-only behavior.

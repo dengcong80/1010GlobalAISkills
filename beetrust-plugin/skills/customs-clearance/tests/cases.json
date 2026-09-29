@@ -1,0 +1,8 @@
+{
+  "skill": "customs-clearance",
+  "cases": [
+    { "id": "honey-classification", "input": "Positive honey line with classification evidence", "expectedStatus": "PASS" },
+    { "id": "missing-classification", "input": "Honey line without classification evidence", "expectedStatus": "BLOCKED" },
+    { "id": "draft-only", "input": "Request to prepare a TSW object", "expectedStatus": "PASS", "expectedConstraint": "DRAFT_ONLY" }
+  ]
+}

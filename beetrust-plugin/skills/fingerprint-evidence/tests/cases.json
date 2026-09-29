@@ -1,0 +1,8 @@
+{
+  "skill": "fingerprint-evidence",
+  "cases": [
+    { "id": "matching-profile", "input": "CSV markers match the reference profile", "expectedStatus": "PASS" },
+    { "id": "borderline-profile", "input": "Marker distance is within review tolerance", "expectedStatus": "REVIEW" },
+    { "id": "malformed-csv", "input": "CSV has no parseable numeric markers", "expectedStatus": "BLOCKED" }
+  ]
+}

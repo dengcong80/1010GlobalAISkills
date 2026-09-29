@@ -19,8 +19,8 @@ The Trade Incident Commander turns one trade sentence into a dependency-aware DA
 
 **Coordination behavior:** fingerprint, custody and MPI checks can start independently; customs waits for MPI; adversary waits for all operational outputs; the evidence monitor is the final gate. Each node has two attempts and emits a retry message after a transient failure.
 
-**Runnable example:** after `npm run build`, run `node skills/orchestration-hub/scripts/run-example.mjs`.
+**Runnable example:** from this skill directory, run `node scripts/run-example.mjs`. The example uses only Node.js built-ins and a local intent fixture.
 
 **Exceptions:** missing handlers and unresolved dependency cycles fail the run; a handler gets one retry and then emits `TASK_FAILED`.
 
-**Self-test:** `src/skills/orchestration-hub/tests.ts` contains 36 cases covering parsing, DAG dependencies, parallel roots, retry budget, trigger routing and cycle-safe execution.
+**Self-test:** `tests/cases.json` contains local pass and block fixtures covering parsing, DAG dependencies, parallel roots, retry budget, trigger routing and cycle-safe execution.

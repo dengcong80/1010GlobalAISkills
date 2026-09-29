@@ -17,7 +17,7 @@
     "scopeNote": "The published demonstration and rule snapshots support New Zealand-origin honey exports to Australia. Other destinations require new rule validation before use."
   },
   "starterPrompts": [
-    "Release 1000 jars of UMF Mānuka honey from New Zealand to Australia for AU retail review.",
+    "Run the 1000-jar demo fixture for consistent UI and docs; other quantities, such as 200 jars, are also parseable.",
     "Compare this honey laboratory CSV with the reference fingerprint and report any release-blocking anomaly.",
     "Check the Australia market-access evidence, custody ledger, and customs readiness before release."
   ],

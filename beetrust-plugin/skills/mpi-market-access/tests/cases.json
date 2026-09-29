@@ -1,0 +1,8 @@
+{
+  "skill": "mpi-market-access",
+  "cases": [
+    { "id": "australia-complete", "input": "Fresh Australia evidence with all mandatory documents", "expectedStatus": "PASS" },
+    { "id": "missing-omar", "input": "Australia evidence without OMAR", "expectedStatus": "BLOCKED" },
+    { "id": "rule-conflict", "input": "Evidence rule version differs from active snapshot", "expectedStatus": "BLOCKED" }
+  ]
+}

@@ -17,10 +17,10 @@ The Red Team Agent injects six controlled failure modes into a cloned trade case
 
 Dry-run mode records the catalogue without changing the release decision. Active faults create findings with severity and an expected `BLOCKED` gate. The original case is never mutated.
 
-**Runnable example:** after `npm run build`, run `node skills/trade-risk-adversary/scripts/run-example.mjs`.
+**Runnable example:** from this skill directory, run `node scripts/run-example.mjs`. The example uses only Node.js built-ins and a local fault catalogue.
 
 **Output:** active faults, findings, severity, expected gate and a red-team evidence reference.
 
 **Exceptions:** unknown fault names and missing mutable fields are reported as controlled findings; no mutation is applied to the original case.
 
-**Self-test:** `src/skills/trade-risk-adversary/tests.ts` contains 29 cases covering every fault, mutation isolation, severity and active/dry-run behavior.
+**Self-test:** `tests/cases.json` contains local pass and block fixtures covering every fault, mutation isolation, severity and active/dry-run behavior.
